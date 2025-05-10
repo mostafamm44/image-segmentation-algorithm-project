@@ -37,25 +37,16 @@ namespace ImageTemplate
         {
             double sigma = double.Parse(txtGaussSigma.Text);
             int maskSize = (int)nudMaskSize.Value ;
-            ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
+          //  ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
             //ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
-
-            var (graph, uf) = ImageOperations.BuildGraph(ImageMatrix);
-            var internalMaxEdges = ImageOperations.GetInternalMaxEdges(graph, uf);
-
-            // 3. Find external min edges
-            var externalMinEdges =ImageOperations.GetExternalMinEdges(graph, uf);
-
-            // 4. Merge components adaptively
-            UnionFind mergedUF = ImageOperations.MergeComponents(graph, uf, internalMaxEdges, externalMinEdges,300);
-
-            ImageOperations.DisplayComponents(ImageMatrix, pictureBox2, mergedUF);
-            //  var graph = ImageOperations.BuildGraph(ImageMatrix, 1);
-            //  ImageOperations.DisplayGraph(graph, pictureBox2, ImageMatrix.GetLength(1), ImageMatrix.GetLength(0));
-            //  string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "graph_output.txt");
-
-            //  ImageOperations.SaveGraphToFile(graph, path);
-            //   MessageBox.Show($"Graph saved to:\n{path}");
+            int width = ImageOperations.GetWidth(ImageMatrix);
+            int height = ImageOperations.GetHeight(ImageMatrix);
+            var (nodeMap,Rdges,Gdges,Bdges,RAlledges,GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
+            
+           var set = ImageOperations.components(1,Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
+           ImageOperations.DisplayDisjointSets(nodeMap,width,height,set, pictureBox2);
+            ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Bdges, set, width, height);
+          
 
 
 

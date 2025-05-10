@@ -9,6 +9,8 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 using static ImageTemplate.ImageOperations;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 using System.Security.Policy;
+using System.Windows.Forms.VisualStyles;
+using System.Linq;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -26,8 +28,8 @@ namespace ImageTemplate
     {
         public double red, green, blue;
     }
-    
-  
+
+
     /// <summary>
     /// Library of static functions that deal with images
     /// </summary>
@@ -97,7 +99,7 @@ namespace ImageTemplate
 
             return Buffer;
         }
-        
+
         /// <summary>
         /// Get the height of the image 
         /// </summary>
@@ -157,13 +159,13 @@ namespace ImageTemplate
         }
 
 
-       /// <summary>
-       /// Apply Gaussian smoothing filter to enhance the edge detection 
-       /// </summary>
-       /// <param name="ImageMatrix">Colored image matrix</param>
-       /// <param name="filterSize">Gaussian mask size</param>
-       /// <param name="sigma">Gaussian sigma</param>
-       /// <returns>smoothed color image</returns>
+        /// <summary>
+        /// Apply Gaussian smoothing filter to enhance the edge detection 
+        /// </summary>
+        /// <param name="ImageMatrix">Colored image matrix</param>
+        /// <param name="filterSize">Gaussian mask size</param>
+        /// <param name="sigma">Gaussian sigma</param>
+        /// <returns>smoothed color image</returns>
         public static RGBPixel[,] GaussianFilter1D(RGBPixel[,] ImageMatrix, int filterSize, double sigma)
         {
             int Height = GetHeight(ImageMatrix);
@@ -172,7 +174,7 @@ namespace ImageTemplate
             RGBPixelD[,] VerFiltered = new RGBPixelD[Height, Width];
             RGBPixel[,] Filtered = new RGBPixel[Height, Width];
 
-           
+
             // Create Filter in Spatial Domain:
             //=================================
             //make the filter ODD size
@@ -246,434 +248,344 @@ namespace ImageTemplate
                     Filtered[i, j].blue = (byte)Sum.blue;
                 }
 
-            return  Filtered;
+            return Filtered;
         }
 
 
         // start code graph
         public struct PixelNode
         {
-            public int X, Y;
-            public RGBPixel Color;
+            public int X;// Column position
+            public int Y;// Row position
+            public RGBPixel color;
             public int id;
-            public PixelNode(int x, int y, RGBPixel color,int width)
+            public PixelNode(int x, int y, RGBPixel co, int i)
+
             {
+                color = co;
                 X = x;
                 Y = y;
-                Color = color;
-                id = y * width + x;
+                id = i;
             }
+
+
         }
+
         public struct Edge
         {
             public PixelNode From;
             public PixelNode To;
-            public double Weight_red;
-            public double Weight_blue;
-            public double Weight_green;
+            public int Weight;
 
-            public Edge(PixelNode from, PixelNode to, double w_red, double w_blue, double w_green)
+            public Edge(PixelNode from, PixelNode to,int w)
             {
                 From = from;
                 To = to;
-                
-               Weight_red = w_red;
-                Weight_blue = w_blue;
-                Weight_green = w_green;
 
+                Weight = w;//Math.Abs(from.color.blue - to.color.blue);
             }
         }
         //build graph for given matrix and c is the color pixel 1 for red 2 for blue 3 for green
-        public static( Dictionary<PixelNode, List<Edge>>,UnionFind) BuildGraph(RGBPixel[,] image)
+        public static (PixelNode[,], List<Edge> , List<Edge> ,List<Edge> , DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
         {
             int height = GetHeight(image);
             int width = GetWidth(image);
-            
-            var graph = new Dictionary<PixelNode, List<Edge>>();
-            UnionFind uf = new UnionFind(height * width);
+            var nodeMap = new PixelNode[height, width];
+            //var graph = new Dictionary<PixelNode, List<Edge>>();
+            List<Edge> RAlledges = new List<Edge>();
+            List<Edge> GAlledges = new List<Edge>();
+            List<Edge> BAlledges = new List<Edge>();
+            DisjointSet Rset = new DisjointSet(width * height);
+            DisjointSet Gset = new DisjointSet(width * height);
+            DisjointSet Bset = new DisjointSet(width * height);
+            int id = 0;
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    PixelNode  node = new PixelNode(x, y, image[y, x],width); 
-                    
-                    graph[node] = new List<Edge>();
-                    //calc the 8 edges
-                   
-                    int[,] directions = {
-                        {1,0 },
-                        {1,1},
-                        {0,1},
-                        {-1, 1},
-                        {-1,0 },
-                        {-1,-1},
-                        {0, -1},
-                        {1,-1 }  
-                    };
-
-                    int l = directions.GetLength(0);
-                    for (int i = 0; i < l; i++)
-                    {
-                        int newY = y + directions[i, 0];
-                        int newX = x + directions[i, 1];
-                        if (newY >= 0 && newY < height && newX >= 0 && newX < width)
-                        {
-                            PixelNode next_node = new PixelNode(newX, newY, image[newY, newX], width);
-                           
-                           
-
-                            Edge ed = new Edge(node,next_node, Math.Abs(node.Color.red - next_node.Color.red),
-                                 Math.Abs(node.Color.blue - next_node.Color.blue),
-                                  Math.Abs(node.Color.green - next_node.Color.green));
-                            graph[node].Add(ed);
-                            if (ed.Weight_red <2 && ed.Weight_green <2&& ed.Weight_blue <2)
-                            {
-                                uf.Union(node.id, next_node.id);
-                            }
-                        }
-
-                    }
-                    
-
-                    
+                    Rset.make_set(id);
+                    Gset.make_set(id);
+                    Bset.make_set(id);
+                    PixelNode node = new PixelNode(x, y, image[y, x], id) ;
+                    id++;
+                    nodeMap[y, x] = node;
+                   // graph[node] = new List<Edge>();           
                 }
             }
-
-            return (graph,uf);
-        }
-        
-        public static void PrintGraph(Dictionary<PixelNode, List<Edge>> graph, TextBox outputBox)
-        {
-            outputBox.Clear();  // clear previous content
-
-            foreach (var kvp in graph)
+            int[,] directions = {
+                             {1, 0},
+                               {1, 1},
+                                    {0, 1},
+                                    {-1, 1},
+                                    {-1, 0},
+                                    {-1, -1},
+                                    {0, -1},
+                                    {1, -1}
+                                };
+            for (int y = 0; y < height; y++)
             {
-                PixelNode node = kvp.Key;
-               // outputBox.AppendText($"Node ({node.X}, {node.Y}) - Color: {node.Color}\r\n");
-
-                foreach (var edge in kvp.Value)
+                for (int x = 0; x < width; x++)
                 {
-                   // outputBox.AppendText($"\t-> ({edge.To.X}, {edge.To.Y}) - Color: {edge.To.Color}, Weight: {edge.Weight}\r\n");
+                    PixelNode current = nodeMap[y, x];
+
+                    for (int i = 0; i < directions.GetLength(0); i++)
+                    {
+                        int dx = directions[i, 1];
+                        int dy = directions[i, 0];
+
+                        int nx = x + dx;
+                        int ny = y + dy;
+                        if (nx >= 0 && ny >= 0 && nx < width && ny < height)
+                        {
+                            PixelNode neighbor = nodeMap[ny, nx];
+
+                            int wr = Math.Abs(current.color.red - neighbor.color.red);
+                            int wg = Math.Abs(current.color.green - neighbor.color.green);
+                            int wb = Math.Abs(current.color.blue - neighbor.color.blue);
+                            Edge Redge = new Edge(current, neighbor, wr);
+                            Edge Gedge = new Edge(current, neighbor, wg);
+                            Edge Bedge = new Edge(current, neighbor, wb);
+                            // Add edge
+                          //  graph[current].Add(Redge);
+                            RAlledges.Add(Redge);
+                          //  Rset.edges[Rset.Find(Redge.From.id)].Add(Redge);
+                           // Rset.edges[Redge.To.id].Add(Redge);
+                            GAlledges.Add(Gedge);
+                          //  Gset.edges[Gset.Find(Gedge.From.id)].Add(Gedge);
+                           // Gset.edges[Gedge.To.id].Add(Gedge);
+                            BAlledges.Add(Bedge);
+                           // Bset.edges[Bset.Find(Bedge.From.id)].Add(Bedge);
+                           // Bset.edges[Bedge.To.id].Add(Bedge);
+                        }
+                }
+           } 
+            }
+                        return (nodeMap,RAlledges,GAlledges, BAlledges, Rset,  Gset, Bset);
+        }
+
+        public static DisjointSet  components(int K,List<Edge> Rdges,List<Edge>Gdges,List<Edge>Bdges,DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
+        {
+           Rdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
+            Gdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
+            Bdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
+            foreach (Edge e in Rdges )
+            {
+                  //  Rset.Add((e.From.id, e.To.id), e.Weight);
+                if (Rset.Find(e.From.id) != Rset.Find(e.To.id))
+                {
+                    if (Rset.it[Bset.Find(e.From.id)] +(K/Rset.GetSize(e.From.id)) >=e.Weight)//Rset.FindValueOptimized((Rset.Find(e.From.id), Rset.Find(e.To.id))))//Rset.diff(e.From.id,e.To.id))
+                    {
+                        //Console.WriteLine("here " + K);
+                        Rset.Union(e.From.id, e.To.id, e);
+                        Rset.it[Bset.Find(e.From.id)] = e.Weight;
+                    }
+                       
                 }
             }
+            foreach (Edge e in Gdges)
+            {
+                  //  Gset.Add((e.From.id, e.To.id), e.Weight);
+                if (Gset.Find(e.From.id) != Gset.Find(e.To.id)&&Rset.Find(e.From.id)==Rset.Find(e.To.id))
+                {
+                    if (Gset.it[Bset.Find(e.From.id)] + (K / Gset.GetSize(e.From.id)) >=e.Weight)//Gset.FindValueOptimized((Gset.Find(e.From.id),Gset.Find(e.To.id))))// Gset.diff(e.From.id, e.To.id))
+                    {
+                        Gset.Union(e.From.id, e.To.id,e);
+                        Gset.it[Bset.Find(e.From.id)] = e.Weight;
+                    }
+
+                }
+            }
+            foreach (Edge e in Bdges)
+            {
+                    //Bset.Add((e.From.id, e.To.id), e.Weight);
+                if (Bset.Find(e.From.id) != Bset.Find(e.To.id)&& Gset.Find(e.From.id) == Gset.Find(e.To.id) && Rset.Find(e.From.id) == Rset.Find(e.To.id))
+                {
+                    if (Bset.it[Bset.Find(e.From.id)] + (K / Bset.GetSize(e.From.id)) >=e.Weight)//Bset.FindValueOptimized((Bset.Find(e.From.id),Bset.Find(e.To.id)))) // Bset.diff(e.From.id, e.To.id))
+                    {
+                        Bset.Union(e.From.id, e.To.id,e);
+                        Bset.it[Bset.Find(e.From.id)]= e.Weight;
+                    }
+
+                }
+            }
+
+            return Bset;
         }
-        // save the graph to textfile
-        public static void SaveGraphToFile(Dictionary<PixelNode, List<Edge>> graph, string filePath)
+
+
+        public static void WriteDisjointSetsToDesktop(PixelNode[,] nodeMap,List<Edge>edges, DisjointSet set, int width, int height)
         {
+            string fileName = "segmentation_results.txt";
+            // Get desktop path that works on Windows, Mac, and Linux
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string filePath = Path.Combine(desktopPath, fileName);
+             if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+
             using (StreamWriter writer = new StreamWriter(filePath))
             {
-                foreach (var kvp in graph)
+                // Write component matrix
+                writer.WriteLine($"Component IDs for {width}x{height} image:");
+
+
+               
+
+                // Calculate component statistics
+                var components = new Dictionary<int, int>();
+                for (int y = 0; y < height; y++)
                 {
-                    PixelNode node = kvp.Key;
-                  //  writer.WriteLine($"Node ({node.X}, {node.Y}) - Color: {node.Color}");
-
-                    foreach (Edge edge in kvp.Value)
+                    for (int x = 0; x < width; x++)
                     {
-                       // writer.WriteLine($"\t-> ({edge.To.X}, {edge.To.Y}) - Color: {edge.To.Color}, Weight: {edge.Weight}");
-                    }
-                }
-            }
-        }
-        //display the graph in the picBox 
-        public static void DisplayGraph(Dictionary<PixelNode, List<Edge>> graph, PictureBox PicBox, int width, int height)
-        {
-            // Create a blank bitmap with the specified dimensions
-            Bitmap graphBMP = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-
-            // Use Graphics object to draw on the bitmap
-            using (Graphics g = Graphics.FromImage(graphBMP))
-            {
-                // Fill the background with white (or any other color)
-                g.Clear(Color.White);
-
-                // Draw edges first (so nodes appear on top)
-                foreach (var kvp in graph)
-                {
-                    PixelNode fromNode = kvp.Key;
-                    foreach (Edge edge in kvp.Value)
-                    {
-                        PixelNode toNode = edge.To;
-                        // Draw edge as a line (light gray)
-                        g.DrawLine(Pens.LightGray, fromNode.X, fromNode.Y, toNode.X, toNode.Y);
+                        int root = set.Find(nodeMap[y, x].id);
+                        components[root] = components.TryGetValue(root, out var count) ? count + 1 : 1;
                     }
                 }
 
-                // Then draw nodes with their respective colors
-                foreach (PixelNode node in graph.Keys)
+                // Write statistics
+                writer.WriteLine("\nComponent Statistics:");
+                writer.WriteLine($"Total components: {components.Count}");
+                writer.WriteLine("Top 10 largest components:");
+                foreach (var kvp in components.OrderByDescending(x => x.Value))
                 {
-                    // Convert node's color to System.Drawing.Color
-                    Color nodeColor = GetColorFromNode(node);
-
-                    // Create a brush with the node's color
-                    using (Brush nodeBrush = new SolidBrush(nodeColor))
-                    {
-                        // Draw node as a small filled circle
-                        int nodeSize = 3; // Adjust size as needed
-                        g.FillEllipse(nodeBrush, node.X - nodeSize / 2, node.Y - nodeSize / 2, nodeSize, nodeSize);
-                    }
+                    writer.WriteLine($"Component {kvp.Key}: {kvp.Value} pixels");
                 }
             }
 
-            // Display the resulting bitmap in the PictureBox
-            PicBox.Image = graphBMP;
+            Console.WriteLine($"Results saved to: {filePath}");
         }
-
-        // Helper method to convert PixelNode's color to System.Drawing.Color
-        private static Color GetColorFromNode(PixelNode node)
+        public static void DisplayDisjointSets(PixelNode[,] nodeMap, int width, int height, DisjointSet set, PictureBox PicBox)
         {
-            // Assuming PixelNode has Red, Green, Blue properties (or similar)
-            // Adjust this based on your actual PixelNode structure
-            return Color.FromArgb(node.Color.red, node.Color.blue, node.Color.green);
-
-            // Alternative if color is stored as a single value:
-            // return Color.FromArgb(node.ColorValue);
-        }
-        // start the union find from here 
-
-        // Finds connected components in a pixel grid using Union-Find
-        public static Dictionary<int, List<PixelNode>> FindConnectedComponents(
-      Dictionary<PixelNode, List<Edge>> graph,
-      UnionFind uf)
-        {
-            var components = new Dictionary<int, List<PixelNode>>();
-
-            foreach (var node in graph.Keys)
-            {
-                int root = uf.Find(node.id);
-                if (!components.ContainsKey(root))
-                {
-                    components[root] = new List<PixelNode>();
-                }
-                components[root].Add(node);
-            }
-
-            return components;
-        }
-        public static Dictionary<int, double> GetInternalMaxEdges(
-      Dictionary<PixelNode, List<Edge>> graph,
-      UnionFind uf)
-        {
-            var internalMaxEdges = new Dictionary<int, double>();
-            var componentEdges = new Dictionary<int, List<Edge>>();
-
-            // Group edges by their component roots
-            foreach (var node in graph.Keys)
-            {
-                int root = uf.Find(node.id);
-                if (!componentEdges.ContainsKey(root))
-                    componentEdges[root] = new List<Edge>();
-
-                foreach (Edge edge in graph[node])
-                {
-                    if (uf.Find(edge.To.id) == root) // Only internal edges
-                        componentEdges[root].Add(edge);
-                }
-            }
-
-            // For each component, find max edge in its MST
-            foreach (var component in componentEdges)
-            {
-                int root = component.Key;
-                var edges = component.Value;
-
-                // Kruskal's algorithm to find MST
-                edges.Sort((a, b) => (a.Weight_red + a.Weight_green + a.Weight_blue)
-                                   .CompareTo(b.Weight_red + b.Weight_green + b.Weight_blue));
-
-                UnionFind tempUF = new UnionFind(uf.parent.Length);
-                double maxEdgeWeight = 0;
-
-                foreach (var edge in edges)
-                {
-                    if (tempUF.Find(edge.From.id) != tempUF.Find(edge.To.id))
-                    {
-                        double currentWeight = edge.Weight_red + edge.Weight_green + edge.Weight_blue;
-                        maxEdgeWeight = Math.Max(maxEdgeWeight, currentWeight);
-                        tempUF.Union(edge.From.id, edge.To.id);
-                    }
-                }
-
-                internalMaxEdges[root] = maxEdgeWeight;
-            }
-
-            return internalMaxEdges;
-        }
-        public static Dictionary<Tuple<int, int>, Tuple<Edge, double>> GetExternalMinEdges(
-    Dictionary<PixelNode, List<Edge>> graph,
-    UnionFind uf)
-        {
-            var externalEdges = new Dictionary<Tuple<int, int>, Tuple<Edge, double>>();
-
-            foreach (var node in graph.Keys)
-            {
-                int rootA = uf.Find(node.id);
-                foreach (Edge edge in graph[node])
-                {
-                    int rootB = uf.Find(edge.To.id);
-
-                    if (rootA != rootB)
-                    {
-                        var key = Tuple.Create(Math.Min(rootA, rootB), Math.Max(rootA, rootB));
-                        double totalWeight = edge.Weight_red + edge.Weight_green + edge.Weight_blue;
-
-                        if (!externalEdges.TryGetValue(key, out var existing) || totalWeight < existing.Item2)
-                        {
-                            externalEdges[key] = Tuple.Create(edge, totalWeight);
-                        }
-                    }
-                }
-            }
-
-            return externalEdges;
-        }
-        public static UnionFind MergeComponents(
-     Dictionary<PixelNode, List<Edge>> graph,
-     UnionFind uf,
-     Dictionary<int, double> internalMaxEdges,
-     Dictionary<Tuple<int, int>, Tuple<Edge, double>> externalMinEdges,
-     double baseThreshold = 10)
-        {
-            // Create a copy of the Union-Find structure
-            UnionFind newUF = new UnionFind(uf.parent.Length);
-            Array.Copy(uf.parent, newUF.parent, uf.parent.Length);
-            Array.Copy(uf.rank, newUF.rank, uf.rank.Length);
-            Array.Copy(uf.Size, newUF.Size, uf.Size.Length); // Copy sizes if available
-
-            foreach (var pair in externalMinEdges)
-            {
-                int rootA = pair.Key.Item1;
-                int rootB = pair.Key.Item2;
-                double externalWeight = pair.Value.Item2;
-
-                // Get component sizes
-                int sizeA = newUF.GetComponentSize(rootA);
-                int sizeB = newUF.GetComponentSize(rootB);
-
-                // Get internal max edges
-                double maxA = internalMaxEdges.TryGetValue(rootA, out double tempA) ? tempA : 0;
-                double maxB = internalMaxEdges.TryGetValue(rootB, out double tempB) ? tempB : 0;
-
-                // Size-dependent threshold adjustment
-                double sizeFactorA = baseThreshold / sizeA;
-                double sizeFactorB = baseThreshold / sizeB;
-                double adaptiveThreshold = Math.Min(maxA + sizeFactorA, maxB + sizeFactorB);
-
-                // Debug output
-                Console.WriteLine($"Component A (Root:{rootA}, Size:{sizeA}, MaxInternal:{maxA:0.00})");
-                Console.WriteLine($"Component B (Root:{rootB}, Size:{sizeB}, MaxInternal:{maxB:0.00})");
-                Console.WriteLine($"External:{externalWeight:0.00} vs Threshold:{adaptiveThreshold:0.00}");
-
-                // Merge condition
-                if (externalWeight <= adaptiveThreshold)
-                {
-                    newUF.Union(rootA, rootB);
-                    Console.WriteLine($"Merged! New size: {newUF.GetComponentSize(rootA)}");
-                }
-            }
-
-            return newUF;
-        }
-        public static void DisplayComponents(RGBPixel[,] originalImage, PictureBox picBox, UnionFind uf)
-        {
-            int height = GetHeight(originalImage);
-            int width = GetWidth(originalImage);
-
-            Bitmap componentBMP = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
             Random rand = new Random();
+            RGBPixel[,] segmented = new RGBPixel[height, width];
 
-            // Step 1: Assign random colors to each component root
-            Dictionary<int, Color> componentColors = new Dictionary<int, Color>();
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    int pixelId = y * width + x;
-                    int root = uf.Find(pixelId);
-
-                    if (!componentColors.ContainsKey(root))
+                    int root = set.Find(nodeMap[y, x].id); // or Gset/Bset
+                    if (!regionColors.ContainsKey(root))
                     {
-                        // Generate a bright random color
-                        componentColors[root] = Color.FromArgb(
-                            rand.Next(1, 256),  // Avoid dark colors
-                            rand.Next(1, 256),
-                            rand.Next(1, 256)
-                        );
+                        regionColors[root] = new RGBPixel
+                        {
+                            red = (byte)rand.Next(256),
+                            green = (byte)rand.Next(256),
+                            blue = (byte)rand.Next(256)
+                        };
                     }
+                    segmented[y, x] = regionColors[root];
                 }
             }
+            DisplayImage(segmented, PicBox);
 
-            // Step 2: Paint each pixel with its component's color
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int pixelId = y * width + x;
-                    int root = uf.Find(pixelId);
-                    componentBMP.SetPixel(x, y, componentColors[root]);
-                }
-            }
-
-            picBox.Image = componentBMP;
         }
+
+
+
     }
-  
-    // Union-Find (Disjoint Set Union) Data Structure
-    public class UnionFind
+
+    public class DisjointSet
     {
-        public int[] parent;
-        public  int[] rank;
-        public int[] Size;
-        public UnionFind(int count)
+        private int[] parent;
+       // private int[] rank;
+        public int [] it ;
+        private int[] count;
+        //public int[,] exdiff;
+       //public Dictionary<int, List<Edge>> edges;
+       // private List<((int, int) pair, int value)> _data;
+        public DisjointSet(int size)
         {
-            parent = new int[count];
-            rank = new int[count];
-            Size = new int[count];
-            for (int i = 0; i < count; i++)
-            {
-                parent[i] = i; // Each node is its own parent initially
-                Size[i] = 1;
-            }
+            parent = new int[size];
+           // rank = new int[size];
+            count = new int[size];
+            it = new int[size];
+        //_data  = new List<((int, int), int)>();
+         //   exdiff = new int[size + 1, size + 1];
         }
 
+        // Add a pair with its value
+        //public void Add((int, int) pair, int value)
+        //{
+        //    _data.Add((pair, value));
+        //}
+        //public int FindValueOptimized((int, int) searchPair)
+        //{
+        //    foreach (var item in _data)
+        //    {
+        //        if (item.pair.Item1 == searchPair.Item1 &&
+        //            item.pair.Item2 == searchPair.Item2)
+        //        {
+        //            return item.value;
+        //        }
+        //    }
+        //    return int.MaxValue;
+        //}
+        // Initially, each node is its own parent
+
+
+        public void make_set(int v)
+        {
+            it[v]= 0;
+            parent[v] = v;
+         //   rank[v] = 0;
+            count[v] = 1;
+           // edges[v] = new List<Edge>();
+        }
         // Find with path compression
         public int Find(int x)
         {
             if (parent[x] != x)
+            {
                 parent[x] = Find(parent[x]); // Path compression
+            }
             return parent[x];
         }
 
         // Union by rank
-        public void Union(int x, int y)
-        {
-            int rootX = Find(x);
-            int rootY = Find(y);
-           
-            if (rootX == rootY)
-                return; // Already connected
+       
 
-            // Attach smaller tree to larger tree
-            if (rank[rootX] > rank[rootY])
-            {
-                parent[rootY] = rootX;
-                Size[rootX] += Size[rootY];
-            }
-            else if (rank[rootX] < rank[rootY])
-            {
-                parent[rootX] = rootY;
-                Size[rootY] += Size[rootX];
+        //private bool AreEdgesEqual(Edge a, Edge b)
+        //{
+        //    // Check if edges are equal (undirected)
+        //    return (a.From.id == b.From.id && a.To.id == b.To.id) ||
+        //           (a.From.id == b.To.id && a.To.id == b.From.id);
+        //}
+       
+            public void Union(int a, int b,Edge e)
+        {
+                int rootA = Find(a);
+                int rootB = Find(b);
+            //exdiff[rootA, rootB] = e.Weight;
+
+           // exdiff[rootB, rootA] = e.Weight;
+                if (rootA == rootB) return;
+
+                // Union by size: attach smaller to larger
+                if (count[rootA] < count[rootB])
+                {
+                    parent[rootA] = rootB;
+                    count[rootB] += count[rootA];
+              //  edges[rootB].AddRange(edges[rootA]);
+               //edges.Remove(rootA);
             }
             else
-            {
-                parent[rootY] = rootX;
-                rank[rootX]++;
-
+                {
+                    parent[rootB] = rootA;
+                    count[rootA] += count[rootB];
+              // edges[rootA].AddRange(edges[rootB]);
+               // edges.Remove(rootB);
             }
-        }
-        public int GetComponentSize(int x)
+            }
+        public int GetSize(int v)
         {
-            return Size[Find(x)];
+            return count[Find(v)];
         }
+        // Optional: Print sets
+       
     }
-
 }
+
+    
+
