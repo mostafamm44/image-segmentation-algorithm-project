@@ -37,17 +37,17 @@ namespace ImageTemplate
         {
             double sigma = double.Parse(txtGaussSigma.Text);
             int maskSize = (int)nudMaskSize.Value ;
-          //  ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
+           ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
             //ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
             int width = ImageOperations.GetWidth(ImageMatrix);
             int height = ImageOperations.GetHeight(ImageMatrix);
-            var (nodeMap,Rdges,Gdges,Bdges,RAlledges,GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
+            var (regionSet,nodeMap, Rdges,Gdges,Bdges,RAlledges,GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
             
-           var set = ImageOperations.components(1,Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
-           ImageOperations.DisplayDisjointSets(nodeMap,width,height,set, pictureBox2);
-            ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Bdges, set, width, height);
+          var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 30000, Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
+           ImageOperations.DisplayDisjointSets(nodeMap,width,height,Rset, pictureBox2);
+            ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Bdges, Rset, width, height);
           
-
+            
 
 
         }

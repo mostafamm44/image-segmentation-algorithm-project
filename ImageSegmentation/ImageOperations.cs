@@ -11,6 +11,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 using System.Security.Policy;
 using System.Windows.Forms.VisualStyles;
 using System.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -275,9 +276,9 @@ namespace ImageTemplate
         {
             public PixelNode From;
             public PixelNode To;
-            public int Weight;
+            public double Weight;
 
-            public Edge(PixelNode from, PixelNode to,int w)
+            public Edge(PixelNode from, PixelNode to,double w)
             {
                 From = from;
                 To = to;
@@ -286,7 +287,7 @@ namespace ImageTemplate
             }
         }
         //build graph for given matrix and c is the color pixel 1 for red 2 for blue 3 for green
-        public static (PixelNode[,], List<Edge> , List<Edge> ,List<Edge> , DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
+        public static (DisjointSet,PixelNode[,], List<Edge> , List<Edge> ,List<Edge> , DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
         {
             int height = GetHeight(image);
             int width = GetWidth(image);
@@ -298,6 +299,7 @@ namespace ImageTemplate
             DisjointSet Rset = new DisjointSet(width * height);
             DisjointSet Gset = new DisjointSet(width * height);
             DisjointSet Bset = new DisjointSet(width * height);
+            DisjointSet regionSet = new DisjointSet(width * height);
             int id = 0;
             for (int y = 0; y < height; y++)
             {
@@ -306,9 +308,10 @@ namespace ImageTemplate
                     Rset.make_set(id);
                     Gset.make_set(id);
                     Bset.make_set(id);
-                    PixelNode node = new PixelNode(x, y, image[y, x], id) ;
-                    id++;
+                    regionSet.make_set(id);
+                     PixelNode node = new PixelNode(x, y, image[y, x], id) ;
                     nodeMap[y, x] = node;
+                    id++;
                    // graph[node] = new List<Edge>();           
                 }
             }
@@ -339,31 +342,28 @@ namespace ImageTemplate
                         {
                             PixelNode neighbor = nodeMap[ny, nx];
 
-                            int wr = Math.Abs(current.color.red - neighbor.color.red);
-                            int wg = Math.Abs(current.color.green - neighbor.color.green);
-                            int wb = Math.Abs(current.color.blue - neighbor.color.blue);
+                            double wr = Math.Abs((double)current.color.red - (double)neighbor.color.red);
+                            double wg = Math.Abs((double)current.color.green - (double)neighbor.color.green);
+                            double wb = Math.Abs((double)current.color.blue - (double)neighbor.color.blue);
                             Edge Redge = new Edge(current, neighbor, wr);
                             Edge Gedge = new Edge(current, neighbor, wg);
                             Edge Bedge = new Edge(current, neighbor, wb);
                             // Add edge
-                          //  graph[current].Add(Redge);
+                         
                             RAlledges.Add(Redge);
-                          //  Rset.edges[Rset.Find(Redge.From.id)].Add(Redge);
-                           // Rset.edges[Redge.To.id].Add(Redge);
+                         
                             GAlledges.Add(Gedge);
-                          //  Gset.edges[Gset.Find(Gedge.From.id)].Add(Gedge);
-                           // Gset.edges[Gedge.To.id].Add(Gedge);
+                          
                             BAlledges.Add(Bedge);
-                           // Bset.edges[Bset.Find(Bedge.From.id)].Add(Bedge);
-                           // Bset.edges[Bedge.To.id].Add(Bedge);
+                           
                         }
                 }
            } 
             }
-                        return (nodeMap,RAlledges,GAlledges, BAlledges, Rset,  Gset, Bset);
+                        return (regionSet,nodeMap, RAlledges,GAlledges, BAlledges, Rset,  Gset, Bset);
         }
 
-        public static DisjointSet  components(int K,List<Edge> Rdges,List<Edge>Gdges,List<Edge>Bdges,DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
+        public static DisjointSet  components(DisjointSet regionSet,PixelNode[,] nodeMap, int height, int width ,int K,List<Edge> Rdges,List<Edge>Gdges,List<Edge>Bdges,DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
         {
            Rdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
             Gdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
@@ -373,11 +373,15 @@ namespace ImageTemplate
                   //  Rset.Add((e.From.id, e.To.id), e.Weight);
                 if (Rset.Find(e.From.id) != Rset.Find(e.To.id))
                 {
-                    if (Rset.it[Bset.Find(e.From.id)] +(K/Rset.GetSize(e.From.id)) >=e.Weight)//Rset.FindValueOptimized((Rset.Find(e.From.id), Rset.Find(e.To.id))))//Rset.diff(e.From.id,e.To.id))
+                    double itF = Rset.it[Rset.Find(e.From.id)] + (K / Rset.GetSize(e.From.id));
+                    double itT = Rset.it[Rset.Find(e.To.id)] + (K / Rset.GetSize(e.To.id));
+                    double Mint = Math.Min(itT, itF);
+                    if (Mint >=e.Weight)
                     {
                         //Console.WriteLine("here " + K);
-                        Rset.Union(e.From.id, e.To.id, e);
-                        Rset.it[Bset.Find(e.From.id)] = e.Weight;
+                        Rset.Union(e.From.id, e.To.id);
+                        Rset.it[Rset.Find(e.From.id)] =//Math.Max( Rset.it[Rset.Find(e.From.id)] ,
+                            e.Weight;//);
                     }
                        
                 }
@@ -385,32 +389,60 @@ namespace ImageTemplate
             foreach (Edge e in Gdges)
             {
                   //  Gset.Add((e.From.id, e.To.id), e.Weight);
-                if (Gset.Find(e.From.id) != Gset.Find(e.To.id)&&Rset.Find(e.From.id)==Rset.Find(e.To.id))
+                if (Gset.Find(e.From.id) != Gset.Find(e.To.id))
                 {
-                    if (Gset.it[Bset.Find(e.From.id)] + (K / Gset.GetSize(e.From.id)) >=e.Weight)//Gset.FindValueOptimized((Gset.Find(e.From.id),Gset.Find(e.To.id))))// Gset.diff(e.From.id, e.To.id))
+                    double itF = Gset.it[Gset.Find(e.From.id)] + (K / Gset.GetSize(e.From.id));
+                    double itT = Gset.it[Gset.Find(e.To.id)] + (K / Gset.GetSize(e.To.id));
+                    double Mint = Math.Min(itT, itF);
+                    if (Mint >=e.Weight)
                     {
-                        Gset.Union(e.From.id, e.To.id,e);
-                        Gset.it[Bset.Find(e.From.id)] = e.Weight;
+                        Gset.Union(e.From.id, e.To.id);
+                        Gset.it[Gset.Find(e.From.id)] = e.Weight;
+                            //Math.Max(Gset.it[Gset.Find(e.From.id)] , e.Weight);
                     }
 
                 }
             }
             foreach (Edge e in Bdges)
             {
-                    //Bset.Add((e.From.id, e.To.id), e.Weight);
-                if (Bset.Find(e.From.id) != Bset.Find(e.To.id)&& Gset.Find(e.From.id) == Gset.Find(e.To.id) && Rset.Find(e.From.id) == Rset.Find(e.To.id))
+                   
+                if (Bset.Find(e.From.id) != Bset.Find(e.To.id)) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
                 {
-                    if (Bset.it[Bset.Find(e.From.id)] + (K / Bset.GetSize(e.From.id)) >=e.Weight)//Bset.FindValueOptimized((Bset.Find(e.From.id),Bset.Find(e.To.id)))) // Bset.diff(e.From.id, e.To.id))
+                    double itF = Bset.it[Bset.Find(e.From.id)] + (K / Bset.GetSize(e.From.id));
+                    double itT = Bset.it[Bset.Find(e.To.id)] + (K / Bset.GetSize(e.To.id));
+                    double Mint = Math.Min(itT, itF);
+                    if (Mint >=e.Weight)
                     {
-                        Bset.Union(e.From.id, e.To.id,e);
-                        Bset.it[Bset.Find(e.From.id)]= e.Weight;
+                        Bset.Union(e.From.id, e.To.id);
+                        Bset.it[Bset.Find(e.From.id)] =//Math.Max(Bset.it[Bset.Find(e.From.id)],
+                            e.Weight;//);
+                        
                     }
 
                 }
             }
-
-            return Bset;
-        }
+           
+         
+          
+           
+            foreach(Edge e in Rdges)
+            {
+              int x=  e.From.X;
+                int y = e.From.Y;
+                int nx = e.To.X;
+                int ny = e.To.Y;
+                int idF = nodeMap[y, x].id;
+                    int idT = nodeMap[ny,nx].id;
+                if (Rset.Find(idF) == Rset.Find(idT)
+                    && Gset.Find(idF) == Gset.Find(idT)
+                    && Bset.Find(idF) == Bset.Find(idT))
+                    {
+                    regionSet.Union(idF,idT);
+                }
+            }
+            
+            return regionSet;
+                 }
 
 
         public static void WriteDisjointSetsToDesktop(PixelNode[,] nodeMap,List<Edge>edges, DisjointSet set, int width, int height)
@@ -418,12 +450,22 @@ namespace ImageTemplate
             string fileName = "segmentation_results.txt";
             // Get desktop path that works on Windows, Mac, and Linux
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string filePath = Path.Combine(desktopPath, fileName);
-             if (File.Exists(filePath))
+            string filePath = Path.Combine(desktopPath, fileName); 
+         
+          
+                // Delete the file if it exists
+                if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
                 }
 
+                // Create a new file and immediately close it to avoid locking issues
+                using (FileStream fs = File.Create(filePath))
+                {
+                    // Optionally write initial content here, or just leave it empty
+                }
+            
+        
             using (StreamWriter writer = new StreamWriter(filePath))
             {
                 // Write component matrix
@@ -446,7 +488,7 @@ namespace ImageTemplate
                 // Write statistics
                 writer.WriteLine("\nComponent Statistics:");
                 writer.WriteLine($"Total components: {components.Count}");
-                writer.WriteLine("Top 10 largest components:");
+                writer.WriteLine("Top  largest components:");
                 foreach (var kvp in components.OrderByDescending(x => x.Value))
                 {
                     writer.WriteLine($"Component {kvp.Key}: {kvp.Value} pixels");
@@ -484,13 +526,14 @@ namespace ImageTemplate
 
 
 
+
     }
 
     public class DisjointSet
     {
         private int[] parent;
        // private int[] rank;
-        public int [] it ;
+        public double [] it ;
         private int[] count;
         //public int[,] exdiff;
        //public Dictionary<int, List<Edge>> edges;
@@ -500,7 +543,7 @@ namespace ImageTemplate
             parent = new int[size];
            // rank = new int[size];
             count = new int[size];
-            it = new int[size];
+            it = new double[size];
         //_data  = new List<((int, int), int)>();
          //   exdiff = new int[size + 1, size + 1];
         }
@@ -553,7 +596,7 @@ namespace ImageTemplate
         //           (a.From.id == b.To.id && a.To.id == b.From.id);
         //}
        
-            public void Union(int a, int b,Edge e)
+            public void Union(int a, int b)
         {
                 int rootA = Find(a);
                 int rootB = Find(b);
@@ -563,20 +606,18 @@ namespace ImageTemplate
                 if (rootA == rootB) return;
 
                 // Union by size: attach smaller to larger
-                if (count[rootA] < count[rootB])
+               if (count[rootA] < count[rootB])
                 {
                     parent[rootA] = rootB;
                     count[rootB] += count[rootA];
-              //  edges[rootB].AddRange(edges[rootA]);
-               //edges.Remove(rootA);
+              
+                }
+               else
+            {
+                parent[rootB] = rootA;
+                count[rootA]+= count[rootB];
             }
-            else
-                {
-                    parent[rootB] = rootA;
-                    count[rootA] += count[rootB];
-              // edges[rootA].AddRange(edges[rootB]);
-               // edges.Remove(rootB);
-            }
+          
             }
         public int GetSize(int v)
         {
