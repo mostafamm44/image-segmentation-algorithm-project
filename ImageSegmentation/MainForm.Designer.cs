@@ -45,16 +45,19 @@ namespace ImageTemplate
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.eventLog1 = new System.Diagnostics.EventLog();
+            this.merge = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaskSize)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(8, 3);
+            this.pictureBox1.Location = new System.Drawing.Point(-12, 0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(427, 360);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -64,12 +67,14 @@ namespace ImageTemplate
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Location = new System.Drawing.Point(2, 9);
+            this.pictureBox2.Location = new System.Drawing.Point(-2, 0);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(412, 360);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBox2.TabIndex = 1;
             this.pictureBox2.TabStop = false;
+            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
+            this.pictureBox2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseClick);
             // 
             // btnOpen
             // 
@@ -229,11 +234,26 @@ namespace ImageTemplate
             this.panel2.Size = new System.Drawing.Size(421, 371);
             this.panel2.TabIndex = 16;
             // 
+            // eventLog1
+            // 
+            this.eventLog1.SynchronizingObject = this;
+            // 
+            // merge
+            // 
+            this.merge.Location = new System.Drawing.Point(794, 417);
+            this.merge.Name = "merge";
+            this.merge.Size = new System.Drawing.Size(75, 46);
+            this.merge.TabIndex = 2;
+            this.merge.Text = "Merge";
+            this.merge.UseVisualStyleBackColor = true;
+            this.merge.Click += new System.EventHandler(this.button1_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(904, 500);
+            this.Controls.Add(this.merge);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.txtGaussSigma);
@@ -258,6 +278,7 @@ namespace ImageTemplate
             this.panel1.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -282,6 +303,8 @@ namespace ImageTemplate
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel panel2;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Diagnostics.EventLog eventLog1;
+        private System.Windows.Forms.Button merge;
     }
 }
 
