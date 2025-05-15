@@ -274,63 +274,59 @@ namespace ImageTemplate
 
         public struct Edge
         {
-            public PixelNode From;
-            public PixelNode To;
-            public double Weight;
+            public int From;
+            public int To;
+            public double  Red_Weight;
+            public double green_Weight;
+            public double blue_Weight;
 
-            public Edge(PixelNode from, PixelNode to,double w)
+            public Edge(int  from, int to,double wr,double wg,double wb)
             {
                 From = from;
                 To = to;
 
-                Weight = w;//Math.Abs(from.color.blue - to.color.blue);
+                Red_Weight = wr;
+                green_Weight = wg;
+                blue_Weight = wb;
             }
         }
         //build graph for given matrix and c is the color pixel 1 for red 2 for blue 3 for green
-        public static (DisjointSet,PixelNode[,], List<Edge> , List<Edge> ,List<Edge> , DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
+        public static (DisjointSet,PixelNode[,], List<Edge>, DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
         {
             int height = GetHeight(image);
             int width = GetWidth(image);
             var nodeMap = new PixelNode[height, width];
             //var graph = new Dictionary<PixelNode, List<Edge>>();
-            List<Edge> RAlledges = new List<Edge>();
-            List<Edge> GAlledges = new List<Edge>();
-            List<Edge> BAlledges = new List<Edge>();
+            //  List<Edge> Alledges = new List<Edge>();
+            List<Edge> Alledges = new List<Edge>();
+            // List<Edge> GAlledges = new List<Edge>();
+            // List<Edge> BAlledges = new List<Edge>();
+           // int[,] check = new int [height,width]; 
             DisjointSet Rset = new DisjointSet(width * height);
             DisjointSet Gset = new DisjointSet(width * height);
             DisjointSet Bset = new DisjointSet(width * height);
             DisjointSet regionSet = new DisjointSet(width * height);
-            int id = 0;
+            int id = 1;
+           
+            nodeMap[0, 0] = new PixelNode(0, 0, image[0, 0], 0);
+           
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    Rset.make_set(id,y,x);
-                    Gset.make_set(id,y,x);
-                    Bset.make_set(id, y, x);
-                    regionSet.make_set(id, y, x);
-                     PixelNode node = new PixelNode(x, y, image[y, x], id) ;
-                    nodeMap[y, x] = node;
-                    id++;
-                   // graph[node] = new List<Edge>();           
-                }
-            }
-            int[,] directions = {
-                             {1, 0},
-                               {1, 1},
+                    Rset.make_set(nodeMap[y, x].id, y, x);
+                    Gset.make_set(nodeMap[y,x].id, y, x);
+                    Bset.make_set(nodeMap[y, x].id, y, x);
+                    regionSet.make_set(nodeMap[y, x].id, y, x);
+                    int[,] directions = {
                                     {0, 1},
-                                    {-1, 1},
-                                    {-1, 0},
-                                    {-1, -1},
-                                    {0, -1},
-                                    {1, -1}
+                                    {1, 1},
+                                    {1, 0},
+                                    {1, -1},
+                                  
                                 };
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
                     PixelNode current = nodeMap[y, x];
-
+                   // nodeMap[y, x] = current;
                     for (int i = 0; i < directions.GetLength(0); i++)
                     {
                         int dx = directions[i, 1];
@@ -338,95 +334,118 @@ namespace ImageTemplate
 
                         int nx = x + dx;
                         int ny = y + dy;
+                        //int id_d = id;
                         if (nx >= 0 && ny >= 0 && nx < width && ny < height)
                         {
-                            PixelNode neighbor = nodeMap[ny, nx];
+                            PixelNode neighbor;
+                            if (nodeMap[ny, nx].id != 0)
+                            {
+                                neighbor = new PixelNode(nx, ny, image[ny, nx], nodeMap[ny, nx].id);
+                                
 
-                            double wr = (double)Math.Abs((double)current.color.red - (double)neighbor.color.red);
+                            }
+                            else
+                            {
+                                
+                                  neighbor = new PixelNode(nx, ny, image[ny, nx], id);
+                                    nodeMap[ny, nx] = neighbor;
+
+                                    id++;
+                                
+                            }
+                           double wr = (double)Math.Abs((double)current.color.red - (double)neighbor.color.red);
                             double wg = (double)Math.Abs((double)current.color.green - (double)neighbor.color.green);
                             double wb = (double)Math.Abs((double)current.color.blue - (double)neighbor.color.blue);
-                            Edge Redge = new Edge(current, neighbor, wr);
-                            Edge Gedge = new Edge(current, neighbor, wg);
-                            Edge Bedge = new Edge(current, neighbor, wb);
-                            // Add edge
-                         
-                            RAlledges.Add(Redge);
-                         
-                            GAlledges.Add(Gedge);
+                            Edge edge = new Edge(current.id, neighbor.id, wr,wg,wb);
                           
-                            BAlledges.Add(Bedge);
+                                Alledges.Add(edge);
+                            
+                     
                            
                         }
                 }
            } 
             }
-                        return (regionSet,nodeMap, RAlledges,GAlledges, BAlledges, Rset,  Gset, Bset);
+                        return (regionSet,nodeMap, Alledges, Rset,  Gset, Bset);
         }
 
-        public static DisjointSet  components(DisjointSet regionSet,PixelNode[,] nodeMap, int height, int width ,int K,List<Edge> Rdges,List<Edge>Gdges,List<Edge>Bdges,DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
+        public static DisjointSet  components(DisjointSet regionSet,PixelNode[,] nodeMap, int height, int width ,int K, List<Edge>  Rdges,DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
         {
-           Rdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
-            Gdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
-            Bdges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
+            List<Edge>Gdges = Rdges;
+            List<Edge> Bdges = Rdges;
+         
+           Rdges.Sort((a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
+           // Array.Sort(Rdges, (a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
             List<Edge> redges = new List<Edge>();
             foreach (Edge e in Rdges )
-            {
+            { int rootF = Rset.Find(e.From);
+                int rootT = Rset.Find(e.To);
+
                   //  Rset.Add((e.From.id, e.To.id), e.Weight);
-                if (Rset.Find(e.From.id) != Rset.Find(e.To.id))
+                if (rootF != rootT)
                 {
-                    double itF = Rset.it[Rset.Find(e.From.id)] +
-                        (double)((double)K / (double)Rset.GetSize(e.From.id));
-                    double itT = Rset.it[Rset.Find(e.To.id)]+
-                        (double)((double)K / (double)Rset.GetSize(e.To.id));
+                    double itF = Rset.it[rootF] +
+                        (double)((double)K / (double)Rset.GetSize(e.From));
+                    double itT = Rset.it[rootT] +
+                        (double)((double)K / (double)Rset.GetSize(e.To));
                     double Mint = (double)Math.Min(itT, itF);
                     
-                    if (Mint >=e.Weight)
+                    if (Mint >=e.Red_Weight)
                     {
                         redges.Add(e);
                         //Console.WriteLine("here " + K);
-                        Rset.Union(e.From.id, e.To.id);
-                        Rset.it[Rset.Find(e.From.id)] = Math.Max(Rset.it[Rset.Find(e.From.id)],e.Weight);
+                        Rset.Union(e.From, e.To);
+                        Rset.it[Rset.Find(rootF)] = e.Red_Weight;
                      
                     }
                        
                 }
             }
+             Gdges.Sort((a, b) => a.green_Weight.CompareTo(b.green_Weight));
+            //Array.Sort(Gdges, (a, b) => a.green_Weight.CompareTo(b.green_Weight));
             foreach (Edge e in Gdges)
             {
-                  //  Gset.Add((e.From.id, e.To.id), e.Weight);
-                if (Gset.Find(e.From.id) != Gset.Find(e.To.id))
+                //  Gset.Add((e.From.id, e.To.id), e.Weight);
+                int rootF = Gset.Find(e.From);
+                int rootT = Gset.Find(e.To);
+                if (rootF != Gset.Find(e.To))
                 {
-                    double itF = Gset.it[Gset.Find(e.From.id)] + 
-                        (double)((double)K / (double)Gset.GetSize(e.From.id));
-                    double itT = Gset.it[Gset.Find(e.To.id)] + 
-                        (double)((double)K / (double)Gset.GetSize(e.To.id));
+                    double itF = Gset.it[rootF] + 
+                        (double)((double)K / (double)Gset.GetSize(e.From));
+                    double itT = Gset.it[rootT] + 
+                        (double)((double)K / (double)Gset.GetSize(e.To));
                     double Mint = Math.Min(itT, itF);
                        // if(Rset.Find(e.From.id) != Rset.Find(e.To.id))redges.Add(e);
-                    if (Mint >=e.Weight)
+                    if (Mint >=e.green_Weight)
                     {
                         redges.Add(e);
-                        Gset.Union(e.From.id, e.To.id);
-                        Gset.it[Gset.Find(e.To.id)] = Math.Max(Gset.it[Gset.Find(e.From.id)], e.Weight);
+                        Gset.Union(e.From, e.To);
+
+                        Gset.it[Gset.Find(rootF)] =  e.green_Weight;
                         //Math.Max(Gset.it[Gset.Find(e.From.id)] , e.Weight);
                     }
 
                 }
             }
+             Bdges.Sort((a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
+           // Array.Sort(Bdges, (a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
             foreach (Edge e in Bdges)
             {
+                int rootF = Bset.Find(e.From);
+                int rootT = Bset.Find(e.To);
 
-                if (Bset.Find(e.From.id) != Bset.Find(e.To.id)) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
+                if (rootF != rootT) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
                 {
-                    double itF = Bset.it[Bset.Find(e.From.id)]
-                        + (double)((double)K / (double)Bset.GetSize(e.From.id));
-                    double itT = Bset.it[Bset.Find(e.To.id)] +
-                        (double)((double)K / (double)Bset.GetSize(e.To.id));
+                    double itF = Bset.it[rootF]
+                        + (double)((double)K / (double)Bset.GetSize(e.From));
+                    double itT = Bset.it[rootT] +
+                        (double)((double)K / (double)Bset.GetSize(e.To));
                     double Mint = Math.Min(itT, itF);
-                    if (Mint >= e.Weight)
+                    if (Mint >= e.blue_Weight)
                     {
                         redges.Add(e);
-                        Bset.Union(e.From.id, e.To.id);
-                        Bset.it[Bset.Find(e.To.id)] = Math.Max(Bset.it[Bset.Find(e.From.id)], e.Weight);
+                        Bset.Union(e.From, e.To);
+                        Bset.it[Bset.Find(rootF)] =  e.blue_Weight;
 
                     }
 
@@ -438,8 +457,8 @@ namespace ImageTemplate
               //  int y = e.From.Y;
               //  int nx = e.To.X;
               //  int ny = e.To.Y;
-                int idF = e.From.id;// nodeMap[y, x].id;
-                int idT = e.To.id;// nodeMap[ny,nx].id;
+                int idF = e.From;// nodeMap[y, x].id;
+                int idT = e.To;// nodeMap[ny,nx].id;
               
                     if (Rset.Find(idF) == Rset.Find(idT)
                         && Gset.Find(idF) == Gset.Find(idT)
@@ -455,7 +474,7 @@ namespace ImageTemplate
                  }
 
 
-        public static void WriteDisjointSetsToDesktop(PixelNode[,] nodeMap,List<Edge>edges, DisjointSet set, int width, int height)
+        public static void WriteDisjointSetsToDesktop(PixelNode[,] nodeMap,List<Edge> edges, DisjointSet set, int width, int height)
         {
             string fileName = "segmentation_results.txt";
             // Get desktop path that works on Windows, Mac, and Linux
@@ -572,6 +591,7 @@ namespace ImageTemplate
            if (!P_id.ContainsKey(v))
             {
                 P_id[v]= new List<(int ,int)>();
+                
             }
             P_id[v].Add((y,x));
            // edges[v] = new List<Edge>();

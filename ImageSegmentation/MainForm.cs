@@ -48,13 +48,13 @@ namespace ImageTemplate
             int height = ImageOperations.GetHeight(ImageMatrix);
             h = height;
             w= width;
-            var (regionSet,nodeMap, Rdges,Gdges,Bdges,RAlledges,GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
-            NodeMap = new PixelNode[width,height];
+            var (regionSet,nodeMap, Rdges,RAlledges,GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
+            NodeMap = new PixelNode[height,w];
             regoins = new DisjointSet(width * height);
             regoins = regionSet;
             NodeMap = nodeMap;
-          var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 35000, Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
-            ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Bdges, Rset, width, height);
+          var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 35000, Rdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
+            ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Rdges, Rset, width, height);
            ImageOperations.DisplayDisjointSets(nodeMap,width,height,Rset, pictureBox2);
           
             
