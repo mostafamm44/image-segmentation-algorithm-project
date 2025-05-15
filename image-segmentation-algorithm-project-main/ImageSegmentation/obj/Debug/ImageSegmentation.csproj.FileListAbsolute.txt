@@ -1,0 +1,32 @@
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\bin\Debug\ImageTemplate.exe.config
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\bin\Debug\ImageTemplate.exe
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\bin\Debug\ImageTemplate.pdb
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageSegmentation.csproj.AssemblyReference.cache
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageSegmentation.csproj.SuggestedBindingRedirects.cache
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageTemplate.MainForm.resources
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageTemplate.Properties.Resources.resources
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageSegmentation.csproj.GenerateResource.cache
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageSegmentation.csproj.CoreCompileInputs.cache
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageTemplate.exe
+D:\[COURSES]\Algorithms\[ALG'24.term2]\Staff\10 Project\RELEASE\[1] Image Encryption and Compression\Startup Code\[TEMPLATE] ImageEncryptCompress\ImageEncryptCompress\obj\Debug\ImageTemplate.pdb
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageTemplate.exe
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageTemplate.pdb
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\bin\Debug\ImageTemplate.exe.config
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\bin\Debug\ImageTemplate.exe
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\bin\Debug\ImageTemplate.pdb
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageSegmentation.csproj.AssemblyReference.cache
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageSegmentation.csproj.SuggestedBindingRedirects.cache
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageTemplate.MainForm.resources
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageTemplate.Properties.Resources.resources
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageSegmentation.csproj.GenerateResource.cache
+D:\[TEMPLATE] ImageSegmentation\ImageSegmentation\obj\Debug\ImageSegmentation.csproj.CoreCompileInputs.cache
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\bin\Debug\ImageTemplate.exe.config
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\bin\Debug\ImageTemplate.exe
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\bin\Debug\ImageTemplate.pdb
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\obj\Debug\ImageSegmentation.csproj.AssemblyReference.cache
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\obj\Debug\ImageTemplate.MainForm.resources
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\obj\Debug\ImageTemplate.Properties.Resources.resources
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\obj\Debug\ImageSegmentation.csproj.GenerateResource.cache
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\obj\Debug\ImageSegmentation.csproj.CoreCompileInputs.cache
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\obj\Debug\ImageTemplate.exe
+D:\University\Algorithms\Project\image-segmentation-algorithm-project-main\ImageSegmentation\obj\Debug\ImageTemplate.pdb
