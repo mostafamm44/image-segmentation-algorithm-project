@@ -529,7 +529,7 @@ namespace ImageTemplate
             Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
             Random rand = new Random();
             RGBPixel[,] segmented = new RGBPixel[height, width];
-
+            Bitmap bmp = new Bitmap(width, height);
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -545,8 +545,13 @@ namespace ImageTemplate
                         };
                     }
                     segmented[y, x] = regionColors[root];
+                    RGBPixel px = segmented[y, x];
+                    Color color = Color.FromArgb(px.red, px.green, px.blue);
+                    bmp.SetPixel(x, y, color);
                 }
             }
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.png");
+            bmp.Save(path);
             DisplayImage(segmented, PicBox);
 
         }
@@ -555,6 +560,7 @@ namespace ImageTemplate
      public static void DisplayMergedComponent(int[,] nodeMap, int width, int height,int component, DisjointSet set,RGBPixel[,] image, PictureBox PicBox)
         {
             RGBPixel[,] segmented = new RGBPixel[height, width];
+            Bitmap bmp = new Bitmap(width, height);
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -570,8 +576,15 @@ namespace ImageTemplate
                         segmented[y, x].red = 255;
                         segmented[y, x].green = 255;
                     }
+                    RGBPixel px =segmented[y, x];
+                    Color color = Color.FromArgb(px.red, px.green, px.blue);
+                    bmp.SetPixel(x, y, color);
+                  
                 }
             }
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.png");
+            bmp.Save(path);
+
             DisplayImage(segmented, PicBox);
         }
 
