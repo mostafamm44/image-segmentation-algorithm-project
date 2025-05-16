@@ -33,7 +33,7 @@ namespace ImageTemplate
             txtWidth.Text = ImageOperations.GetWidth(ImageMatrix).ToString();
             txtHeight.Text = ImageOperations.GetHeight(ImageMatrix).ToString();
         }
-        ImageOperations.PixelNode[,] NodeMap;
+        int[,] NodeMap;
         DisjointSet regoins;
         int w, h;
         RGBPixel [,] allimage ;
@@ -49,10 +49,10 @@ namespace ImageTemplate
             h = height;
             w= width;
             var (regionSet,nodeMap, Rdges, Bdges, Gdges,RAlledges, GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
-            NodeMap = new PixelNode[height,w];
+            NodeMap = new int[height,w];
             regoins = new DisjointSet(width * height);
             regoins = regionSet;
-            //NodeMap = nodeMap;
+            NodeMap = nodeMap;
           var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 30000, Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
             ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Rdges, Rset, width, height);
            ImageOperations.DisplayDisjointSets(nodeMap,width,height,Rset, pictureBox2);
@@ -84,30 +84,31 @@ namespace ImageTemplate
             selected.Add((e.X,e.Y));
            
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            ImageOperations.DisplayDisjointSets(NodeMap, w, h, regoins, pictureBox2);
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             RGBPixel[,] merged = new RGBPixel[h, w];
-            for (int i = 0; i < h; i++)
+            if (selected.Count > 0)
             {
-                for (int j = 0; j < w; j++)
-                {
-                    merged[i, j].red = 255;
-                    merged[i, j].green = 255;
-                    merged[i, j].blue = 255;
-                }
-            }
-            //int u;
-            //  DisjointSet merged = new DisjointSet(h * w);
+                var G = selected[selected.Count-1];
+            int u= regoins.Find(NodeMap[ G.y, G.x]);
+           
             foreach (var t in selected)
             {
-               int component =regoins.Find( NodeMap[t.y, t.x].id);
+               int component =regoins.Find( NodeMap[t.y, t.x]);
 
-                //foreach(var c in regoins.P_id[component])
-                //{
-                //    merged[c.Item1, c.Item2] = allimage[c.Item1, c.Item2];
-                //}
+                regoins.Union(u, component);
             }
-            ImageOperations.DisplayImage(merged, pictureBox2);
+            ImageOperations.DisplayMergedComponent(NodeMap, w, h, regoins.Find(u), regoins, ImageMatrix, pictureBox2);
+            } else
+            {
+                MessageBox.Show("must select regions ");
+            }
         }
     }
 }

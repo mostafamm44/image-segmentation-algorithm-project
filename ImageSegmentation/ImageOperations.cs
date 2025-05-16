@@ -513,12 +513,12 @@ namespace ImageTemplate
                 }
 
                 // Write statistics
-                writer.WriteLine("\nComponent Statistics:");
-                writer.WriteLine($"Total components: {components.Count}");
-                writer.WriteLine("Top  largest components:");
+            //    writer.WriteLine("\nComponent Statistics:");
+                writer.WriteLine( components.Count);
+              //  writer.WriteLine("Top  largest components:");
                 foreach (var kvp in components.OrderByDescending(x => x.Value))
                 {
-                    writer.WriteLine($"Component {kvp.Key}: {kvp.Value} pixels");
+                    writer.WriteLine(kvp.Value);
                 }
             }
 
@@ -552,10 +552,31 @@ namespace ImageTemplate
         }
 
 
+     public static void DisplayMergedComponent(int[,] nodeMap, int width, int height,int component, DisjointSet set,RGBPixel[,] image, PictureBox PicBox)
+        {
+            RGBPixel[,] segmented = new RGBPixel[height, width];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int root = set.Find(nodeMap[y, x]); // or Gset/Bset
+                    if (root == component)
+                    {
+                        segmented[y, x] = image[y, x];
+                    }
+                    else
+                    {
+                        segmented[y, x].blue = 255;
+                        segmented[y, x].red = 255;
+                        segmented[y, x].green = 255;
+                    }
+                }
+            }
+            DisplayImage(segmented, PicBox);
+        }
 
 
     }
-
     public class DisjointSet
     {
         private int[] parent;
