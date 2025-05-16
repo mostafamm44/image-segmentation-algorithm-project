@@ -48,12 +48,12 @@ namespace ImageTemplate
             int height = ImageOperations.GetHeight(ImageMatrix);
             h = height;
             w= width;
-            var (regionSet,nodeMap, Rdges,RAlledges,GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
+            var (regionSet,nodeMap, Rdges, Bdges, Gdges,RAlledges, GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
             NodeMap = new PixelNode[height,w];
             regoins = new DisjointSet(width * height);
             regoins = regionSet;
-            NodeMap = nodeMap;
-          var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 35000, Rdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
+            //NodeMap = nodeMap;
+          var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 30000, Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
             ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Rdges, Rset, width, height);
            ImageOperations.DisplayDisjointSets(nodeMap,width,height,Rset, pictureBox2);
           
@@ -102,10 +102,10 @@ namespace ImageTemplate
             {
                int component =regoins.Find( NodeMap[t.y, t.x].id);
 
-                foreach(var c in regoins.P_id[component])
-                {
-                    merged[c.Item1, c.Item2] = allimage[c.Item1, c.Item2];
-                }
+                //foreach(var c in regoins.P_id[component])
+                //{
+                //    merged[c.Item1, c.Item2] = allimage[c.Item1, c.Item2];
+                //}
             }
             ImageOperations.DisplayImage(merged, pictureBox2);
         }
