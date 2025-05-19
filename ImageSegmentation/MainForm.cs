@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using static ImageTemplate.ImageOperations;
 using static System.Net.Mime.MediaTypeNames;
+using System.Diagnostics;
+using System.Linq;
 
 namespace ImageTemplate
 {
@@ -33,10 +35,11 @@ namespace ImageTemplate
             txtWidth.Text = ImageOperations.GetWidth(ImageMatrix).ToString();
             txtHeight.Text = ImageOperations.GetHeight(ImageMatrix).ToString();
         }
-        ImageOperations.PixelNode[,] NodeMap;
+        int[,] NodeMap;
         DisjointSet regoins;
         int w, h;
         RGBPixel [,] allimage ;
+        Dictionary<int, RGBPixel> regionColors;
         private void btnGaussSmooth_Click(object sender, EventArgs e)
         {
             allimage = ImageMatrix;
@@ -48,16 +51,69 @@ namespace ImageTemplate
             int height = ImageOperations.GetHeight(ImageMatrix);
             h = height;
             w= width;
-            var (regionSet,nodeMap, Rdges,RAlledges,GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
-            NodeMap = new PixelNode[height,w];
+
+            Stopwatch timer = Stopwatch.StartNew();
+
+            var (regionSet,nodeMap, Rdges, Bdges, Gdges,RAlledges, GAlledges,BAlledges ) = ImageOperations.BuildGraph(ImageMatrix);
+            NodeMap = new int[height,w];
             regoins = new DisjointSet(width * height);
             regoins = regionSet;
             NodeMap = nodeMap;
-          var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 35000, Rdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
-            ImageOperations.WriteDisjointSetsToDesktop( nodeMap,Rdges, Rset, width, height);
-           ImageOperations.DisplayDisjointSets(nodeMap,width,height,Rset, pictureBox2);
-          
+            var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 30000, Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
+
+            //  random colors 
+            regionColors = new Dictionary<int, RGBPixel>();
+            Random rand = new Random();
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int root = Rset.Find(nodeMap[y, x]);
+                    if (!regionColors.ContainsKey(root))
+                    {
+                        regionColors[root] = new RGBPixel
+                        {
+                            red = (byte)rand.Next(256),
+                            green = (byte)rand.Next(256),
+                            blue = (byte)rand.Next(256)
+                        };
+                    }
+                }
+            }
+
+            //  sort segment 
+            var components = new Dictionary<int, int>();
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int root = Rset.Find(nodeMap[y, x]);
+                    if (!components.ContainsKey(root))
+                    {
+                        components.Add(root, Rset.GetSize(root));
+                    }
+                }
+            }
+
+
+            var sortedComponents = components.OrderByDescending(x => x.Value).ToList();
+
+            timer.Stop();
+            long time = timer.ElapsedMilliseconds;
+
+
+            MessageBox.Show($"Segmentation Processing Time: {time} ms",
+                           "Processing Time", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+
             
+            ImageOperations.WriteDisjointSetsToDesktopWithPreCalculatedData(NodeMap, Rdges, Rset, width, height, sortedComponents);
+
+            
+            ImageOperations.DisplayDisjointSetsWithPreCalculatedColors(NodeMap, width, height, Rset, regionColors, pictureBox2);
+
+
+
 
 
         }
@@ -84,30 +140,31 @@ namespace ImageTemplate
             selected.Add((e.X,e.Y));
            
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            ImageOperations.DisplayDisjointSetsWithPreCalculatedColors(NodeMap, w, h, regoins, regionColors, pictureBox2);
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             RGBPixel[,] merged = new RGBPixel[h, w];
-            for (int i = 0; i < h; i++)
+            if (selected.Count > 0)
             {
-                for (int j = 0; j < w; j++)
-                {
-                    merged[i, j].red = 255;
-                    merged[i, j].green = 255;
-                    merged[i, j].blue = 255;
-                }
-            }
-            //int u;
-            //  DisjointSet merged = new DisjointSet(h * w);
+                var G = selected[selected.Count-1];
+            int u= regoins.Find(NodeMap[ G.y, G.x]);
+           
             foreach (var t in selected)
             {
-               int component =regoins.Find( NodeMap[t.y, t.x].id);
+               int component =regoins.Find( NodeMap[t.y, t.x]);
 
-                foreach(var c in regoins.P_id[component])
-                {
-                    merged[c.Item1, c.Item2] = allimage[c.Item1, c.Item2];
-                }
+                regoins.Union(u, component);
             }
-            ImageOperations.DisplayImage(merged, pictureBox2);
+            ImageOperations.DisplayMergedComponent(NodeMap, w, h, regoins.Find(u), regoins, ImageMatrix, pictureBox2);
+            } else
+            {
+                MessageBox.Show("must select regions ");
+            }
         }
     }
 }

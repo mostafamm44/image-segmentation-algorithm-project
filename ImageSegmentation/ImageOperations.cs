@@ -12,6 +12,8 @@ using System.Security.Policy;
 using System.Windows.Forms.VisualStyles;
 using System.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+
+using System.Threading.Tasks;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -276,48 +278,44 @@ namespace ImageTemplate
         {
             public int From;
             public int To;
-            public double  Red_Weight;
-            public double green_Weight;
-            public double blue_Weight;
-
-            public Edge(int  from, int to,double wr,double wg,double wb)
+            public byte weight;
+       
+            public Edge(int  from, int to,byte weight)
             {
                 From = from;
                 To = to;
 
-                Red_Weight = wr;
-                green_Weight = wg;
-                blue_Weight = wb;
+                this.weight = weight;
             }
         }
         //build graph for given matrix and c is the color pixel 1 for red 2 for blue 3 for green
-        public static (DisjointSet,PixelNode[,], List<Edge>, DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
+        public static (DisjointSet,int[,], List<Edge>, List<Edge>, List<Edge>, DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
         {
             int height = GetHeight(image);
             int width = GetWidth(image);
-            var nodeMap = new PixelNode[height, width];
+            int [,] nodeMap = new int[height, width];
             //var graph = new Dictionary<PixelNode, List<Edge>>();
             //  List<Edge> Alledges = new List<Edge>();
-            List<Edge> Alledges = new List<Edge>();
-            // List<Edge> GAlledges = new List<Edge>();
-            // List<Edge> BAlledges = new List<Edge>();
-           // int[,] check = new int [height,width]; 
+            List<Edge> RAlledges = new List<Edge>();
+            List<Edge> GAlledges = new List<Edge>();
+            List<Edge> BAlledges = new List<Edge>();
+            // int[,] check = new int [height,width]; 
             DisjointSet Rset = new DisjointSet(width * height);
             DisjointSet Gset = new DisjointSet(width * height);
             DisjointSet Bset = new DisjointSet(width * height);
             DisjointSet regionSet = new DisjointSet(width * height);
             int id = 1;
            
-            nodeMap[0, 0] = new PixelNode(0, 0, image[0, 0], 0);
+            nodeMap[0, 0] = 0;
            
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    Rset.make_set(nodeMap[y, x].id, y, x);
-                    Gset.make_set(nodeMap[y,x].id, y, x);
-                    Bset.make_set(nodeMap[y, x].id, y, x);
-                    regionSet.make_set(nodeMap[y, x].id, y, x);
+                    Rset.make_set(nodeMap[y, x], y, x);
+                    Gset.make_set(nodeMap[y,x], y, x);
+                    Bset.make_set(nodeMap[y, x], y, x);
+                    regionSet.make_set(nodeMap[y, x], y, x);
                     int[,] directions = {
                                     {0, 1},
                                     {1, 1},
@@ -325,7 +323,7 @@ namespace ImageTemplate
                                     {1, -1},
                                   
                                 };
-                    PixelNode current = nodeMap[y, x];
+                    PixelNode current = new PixelNode(x,y, image[y,x], nodeMap[y,x]);
                    // nodeMap[y, x] = current;
                     for (int i = 0; i < directions.GetLength(0); i++)
                     {
@@ -338,9 +336,9 @@ namespace ImageTemplate
                         if (nx >= 0 && ny >= 0 && nx < width && ny < height)
                         {
                             PixelNode neighbor;
-                            if (nodeMap[ny, nx].id != 0)
+                            if (nodeMap[ny, nx] != 0)
                             {
-                                neighbor = new PixelNode(nx, ny, image[ny, nx], nodeMap[ny, nx].id);
+                                neighbor = new PixelNode(nx, ny, image[ny, nx], nodeMap[ny, nx]);
                                 
 
                             }
@@ -348,109 +346,123 @@ namespace ImageTemplate
                             {
                                 
                                   neighbor = new PixelNode(nx, ny, image[ny, nx], id);
-                                    nodeMap[ny, nx] = neighbor;
+                                    nodeMap[ny, nx] = neighbor.id;
 
                                     id++;
                                 
                             }
-                           double wr = (double)Math.Abs((double)current.color.red - (double)neighbor.color.red);
-                            double wg = (double)Math.Abs((double)current.color.green - (double)neighbor.color.green);
-                            double wb = (double)Math.Abs((double)current.color.blue - (double)neighbor.color.blue);
-                            Edge edge = new Edge(current.id, neighbor.id, wr,wg,wb);
-                          
-                                Alledges.Add(edge);
-                            
-                     
-                           
+                           byte wr = (byte)Math.Abs(current.color.red - neighbor.color.red);
+                           byte wg = (byte)Math.Abs(current.color.green - neighbor.color.green);
+                           byte wb = (byte)Math.Abs(current.color.blue - neighbor.color.blue);
+                            Edge redge = new Edge(current.id, neighbor.id, wr);
+                            Edge gedge = new Edge(current.id, neighbor.id,  wg);
+                            Edge bedge = new Edge(current.id, neighbor.id,  wb);
+
+                            RAlledges.Add(redge);
+                            GAlledges.Add(gedge);
+                            BAlledges.Add(bedge);
+
+
+
                         }
                 }
            } 
             }
-                        return (regionSet,nodeMap, Alledges, Rset,  Gset, Bset);
+                        return (regionSet,nodeMap, RAlledges, GAlledges, BAlledges, Rset,  Gset, Bset);
         }
 
-        public static DisjointSet  components(DisjointSet regionSet,PixelNode[,] nodeMap, int height, int width ,int K, List<Edge>  Rdges,DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
+        public static DisjointSet components(DisjointSet regionSet, int[,] nodeMap, int height, int width, int K, List<Edge> Rdges, List<Edge> Gdges, List<Edge> Bdges, DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
         {
-            List<Edge>Gdges = Rdges;
-            List<Edge> Bdges = Rdges;
-         
-           Rdges.Sort((a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
-           // Array.Sort(Rdges, (a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
-            List<Edge> redges = new List<Edge>();
-            foreach (Edge e in Rdges )
-            { int rootF = Rset.Find(e.From);
-                int rootT = Rset.Find(e.To);
 
-                  //  Rset.Add((e.From.id, e.To.id), e.Weight);
-                if (rootF != rootT)
+            Rdges.Sort((a, b) => a.weight.CompareTo(b.weight));
+            Gdges.Sort((a, b) => a.weight.CompareTo(b.weight));
+            Bdges.Sort((a, b) => a.weight.CompareTo(b.weight));
+            Parallel.Invoke(
+            // Array.Sort(Rdges, (a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
+            () =>
+            {
+                foreach (Edge e in Rdges)
                 {
-                    double itF = Rset.it[rootF] +
-                        (double)((double)K / (double)Rset.GetSize(e.From));
-                    double itT = Rset.it[rootT] +
-                        (double)((double)K / (double)Rset.GetSize(e.To));
-                    double Mint = (double)Math.Min(itT, itF);
-                    
-                    if (Mint >=e.Red_Weight)
+                    int rootF = Rset.Find(e.From);
+                    int rootT = Rset.Find(e.To);
+
+                    //  Rset.Add((e.From.id, e.To.id), e.Weight);
+                    if (rootF != rootT)
                     {
-                        redges.Add(e);
-                        //Console.WriteLine("here " + K);
-                        Rset.Union(e.From, e.To);
-                        Rset.it[Rset.Find(rootF)] = e.Red_Weight;
-                     
+                        double itF = Rset.it[rootF] +
+                            (double)((double)K / (double)Rset.GetSize(e.From));
+                        double itT = Rset.it[rootT] +
+                            (double)((double)K / (double)Rset.GetSize(e.To));
+                        double Mint = (double)Math.Min(itT, itF);
+
+                        if (Mint >= e.weight)
+                        {
+                            //Console.WriteLine("here " + K);
+                            Rset.Union(e.From, e.To);
+                            Rset.it[Rset.Find(rootF)] = e.weight;
+
+                        }
+
                     }
-                       
                 }
-            }
-             Gdges.Sort((a, b) => a.green_Weight.CompareTo(b.green_Weight));
+            },
+
             //Array.Sort(Gdges, (a, b) => a.green_Weight.CompareTo(b.green_Weight));
-            foreach (Edge e in Gdges)
+            () =>
             {
-                //  Gset.Add((e.From.id, e.To.id), e.Weight);
-                int rootF = Gset.Find(e.From);
-                int rootT = Gset.Find(e.To);
-                if (rootF != Gset.Find(e.To))
+                foreach (Edge e in Gdges)
                 {
-                    double itF = Gset.it[rootF] + 
-                        (double)((double)K / (double)Gset.GetSize(e.From));
-                    double itT = Gset.it[rootT] + 
-                        (double)((double)K / (double)Gset.GetSize(e.To));
-                    double Mint = Math.Min(itT, itF);
-                       // if(Rset.Find(e.From.id) != Rset.Find(e.To.id))redges.Add(e);
-                    if (Mint >=e.green_Weight)
+                    //  Gset.Add((e.From.id, e.To.id), e.Weight);
+                    int rootF = Gset.Find(e.From);
+                    int rootT = Gset.Find(e.To);
+                    if (rootF != Gset.Find(e.To))
                     {
-                        redges.Add(e);
-                        Gset.Union(e.From, e.To);
+                        double itF = Gset.it[rootF] +
+                            (double)((double)K / (double)Gset.GetSize(e.From));
+                        double itT = Gset.it[rootT] +
+                            (double)((double)K / (double)Gset.GetSize(e.To));
+                        double Mint = Math.Min(itT, itF);
+                        // if(Rset.Find(e.From.id) != Rset.Find(e.To.id))redges.Add(e);
+                        if (Mint >= e.weight)
+                        {
+                            Gset.Union(e.From, e.To);
 
-                        Gset.it[Gset.Find(rootF)] =  e.green_Weight;
-                        //Math.Max(Gset.it[Gset.Find(e.From.id)] , e.Weight);
-                    }
-
-                }
-            }
-             Bdges.Sort((a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
-           // Array.Sort(Bdges, (a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
-            foreach (Edge e in Bdges)
-            {
-                int rootF = Bset.Find(e.From);
-                int rootT = Bset.Find(e.To);
-
-                if (rootF != rootT) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
-                {
-                    double itF = Bset.it[rootF]
-                        + (double)((double)K / (double)Bset.GetSize(e.From));
-                    double itT = Bset.it[rootT] +
-                        (double)((double)K / (double)Bset.GetSize(e.To));
-                    double Mint = Math.Min(itT, itF);
-                    if (Mint >= e.blue_Weight)
-                    {
-                        redges.Add(e);
-                        Bset.Union(e.From, e.To);
-                        Bset.it[Bset.Find(rootF)] =  e.blue_Weight;
+                            Gset.it[Gset.Find(rootF)] = e.weight;
+                            //Math.Max(Gset.it[Gset.Find(e.From.id)] , e.Weight);
+                        }
 
                     }
-
                 }
-            }
+            },
+
+
+            // Array.Sort(Bdges, (a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
+             () =>
+             {
+                 foreach (Edge e in Bdges)
+                 {
+                     int rootF = Bset.Find(e.From);
+                     int rootT = Bset.Find(e.To);
+
+                     if (rootF != rootT) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
+                     {
+                         double itF = Bset.it[rootF]
+                             + (double)((double)K / (double)Bset.GetSize(e.From));
+                         double itT = Bset.it[rootT] +
+                             (double)((double)K / (double)Bset.GetSize(e.To));
+                         double Mint = Math.Min(itT, itF);
+                         if (Mint >= e.weight)
+                         {
+                             Bset.Union(e.From, e.To);
+                             Bset.it[Bset.Find(rootF)] = e.weight;
+
+                         }
+
+                     }
+                 }
+             }
+            );
+            
             foreach (Edge e in Rdges)
             {
               //int x=  e.From.X;
@@ -474,7 +486,8 @@ namespace ImageTemplate
                  }
 
 
-        public static void WriteDisjointSetsToDesktop(PixelNode[,] nodeMap,List<Edge> edges, DisjointSet set, int width, int height)
+        public static void WriteDisjointSetsToDesktopWithPreCalculatedData(int[,] nodeMap, List<Edge> edges, DisjointSet set, int width, int height, List<KeyValuePair<int, int>> sortedComponents)
+
         {
             string fileName = "segmentation_results.txt";
             // Get desktop path that works on Windows, Mac, and Linux
@@ -498,69 +511,108 @@ namespace ImageTemplate
             using (StreamWriter writer = new StreamWriter(filePath))
             {
                 // Write component matrix
-                writer.WriteLine($"Component IDs for {width}x{height} image:");
+                //writer.WriteLine($"Component IDs for {width}x{height} image:");
 
+                writer.WriteLine(sortedComponents.Count);
 
-               
-
-                // Calculate component statistics
-                var components = new Dictionary<int, int>();
-                for (int y = 0; y < height; y++)
+                foreach (var kvp in sortedComponents)
                 {
-                    for (int x = 0; x < width; x++)
-                    {
-                        int root = set.Find(nodeMap[y, x].id);
-                        if (!components.ContainsKey(root)){
-                            components.Add(root, set.GetSize(root)) ;
-                        }
-                            // components.TryGetValue(root, out var count) ? count + 1 : 1;
-                    }
+                    writer.WriteLine(kvp.Value);
                 }
 
-                // Write statistics
-                writer.WriteLine("\nComponent Statistics:");
-                writer.WriteLine($"Total components: {components.Count}");
-                writer.WriteLine("Top  largest components:");
-                foreach (var kvp in components.OrderByDescending(x => x.Value))
-                {
-                    writer.WriteLine($"Component {kvp.Key}: {kvp.Value} pixels");
-                }
+
+                //    // Calculate component statistics
+                //    var components = new Dictionary<int, int>();
+                //    for (int y = 0; y < height; y++)
+                //    {
+                //        for (int x = 0; x < width; x++)
+                //        {
+                //            int root = set.Find(nodeMap[y, x]);
+                //            if (!components.ContainsKey(root)){
+                //                components.Add(root, set.GetSize(root)) ;
+                //            }
+                //                // components.TryGetValue(root, out var count) ? count + 1 : 1;
+                //        }
+                //    }
+
+                //    // Write statistics
+                ////    writer.WriteLine("\nComponent Statistics:");
+                //    writer.WriteLine( components.Count);
+                //  //  writer.WriteLine("Top  largest components:");
+                //    foreach (var kvp in components.OrderByDescending(x => x.Value))
+                //    {
+                //        writer.WriteLine(kvp.Value);
+                //    }
             }
 
             Console.WriteLine($"Results saved to: {filePath}");
         }
-        public static void DisplayDisjointSets(PixelNode[,] nodeMap, int width, int height, DisjointSet set, PictureBox PicBox)
+        public static void DisplayDisjointSetsWithPreCalculatedColors(int[,] nodeMap, int width, int height, DisjointSet set, Dictionary<int, RGBPixel> regionColors, PictureBox PicBox)
         {
-            Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
-            Random rand = new Random();
+            //Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
+            //Random rand = new Random();
             RGBPixel[,] segmented = new RGBPixel[height, width];
-
+            Bitmap bmp = new Bitmap(width, height);
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    int root = set.Find(nodeMap[y, x].id); // or Gset/Bset
-                    if (!regionColors.ContainsKey(root))
-                    {
-                        regionColors[root] = new RGBPixel
-                        {
-                            red = (byte)rand.Next(256),
-                            green = (byte)rand.Next(256),
-                            blue = (byte)rand.Next(256)
-                        };
-                    }
+                    int root = set.Find(nodeMap[y, x]); // or Gset/Bset
+                    //if (!regionColors.ContainsKey(root))
+                    //{
+                    //    regionColors[root] = new RGBPixel
+                    //    {
+                    //        red = (byte)rand.Next(256),
+                    //        green = (byte)rand.Next(256),
+                    //        blue = (byte)rand.Next(256)
+                    //    };
+                    //}
                     segmented[y, x] = regionColors[root];
+                    RGBPixel px = segmented[y, x];
+                    Color color = Color.FromArgb(px.red, px.green, px.blue);
+                    bmp.SetPixel(x, y, color);
                 }
             }
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.png");
+            bmp.Save(path);
             DisplayImage(segmented, PicBox);
 
         }
 
 
+     public static void DisplayMergedComponent(int[,] nodeMap, int width, int height,int component, DisjointSet set,RGBPixel[,] image, PictureBox PicBox)
+        {
+            RGBPixel[,] segmented = new RGBPixel[height, width];
+            Bitmap bmp = new Bitmap(width, height);
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int root = set.Find(nodeMap[y, x]); // or Gset/Bset
+                    if (root == component)
+                    {
+                        segmented[y, x] = image[y, x];
+                    }
+                    else
+                    {
+                        segmented[y, x].blue = 255;
+                        segmented[y, x].red = 255;
+                        segmented[y, x].green = 255;
+                    }
+                    RGBPixel px =segmented[y, x];
+                    Color color = Color.FromArgb(px.red, px.green, px.blue);
+                    bmp.SetPixel(x, y, color);
+                  
+                }
+            }
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.png");
+            bmp.Save(path);
+
+            DisplayImage(segmented, PicBox);
+        }
 
 
     }
-
     public class DisjointSet
     {
         private int[] parent;
@@ -578,7 +630,7 @@ namespace ImageTemplate
             it = new double[size];
             //_data  = new List<((int, int), int)>();
             //   exdiff = new int[size + 1, size + 1];
-            P_id = new Dictionary<int, List<(int,int)>>();
+           // P_id = new Dictionary<int, List<(int,int)>>();
         }
 
 
@@ -588,12 +640,12 @@ namespace ImageTemplate
             parent[v] = v;
          //   rank[v] = 0;
             count[v] = 1;
-           if (!P_id.ContainsKey(v))
-            {
-                P_id[v]= new List<(int ,int)>();
+           //if (!P_id.ContainsKey(v))
+           // {
+           //     P_id[v]= new List<(int ,int)>();
                 
-            }
-            P_id[v].Add((y,x));
+           // }
+           // P_id[v].Add((y,x));
            // edges[v] = new List<Edge>();
         }
         // Find with path compression
@@ -630,13 +682,13 @@ namespace ImageTemplate
                 {
                     parent[rootA] = rootB;
                     count[rootB] += count[rootA];
-                P_id[rootB].AddRange(P_id[rootA]);
+             //   P_id[rootB].AddRange(P_id[rootA]);
                 }
                else
             {
                 parent[rootB] = rootA;
                 count[rootA]+= count[rootB];
-                P_id[rootA].AddRange(P_id[rootB]);
+               // P_id[rootA].AddRange(P_id[rootB]);
             }
           
             }

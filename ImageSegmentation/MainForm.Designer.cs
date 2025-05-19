@@ -47,6 +47,7 @@ namespace ImageTemplate
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.eventLog1 = new System.Diagnostics.EventLog();
             this.merge = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaskSize)).BeginInit();
@@ -103,9 +104,9 @@ namespace ImageTemplate
             this.label2.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.Location = new System.Drawing.Point(605, 393);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(148, 19);
+            this.label2.Size = new System.Drawing.Size(153, 19);
             this.label2.TabIndex = 4;
-            this.label2.Text = "Smoothed Image";
+            this.label2.Text = "Segminted Image";
             // 
             // btnGaussSmooth
             // 
@@ -240,19 +241,30 @@ namespace ImageTemplate
             // 
             // merge
             // 
-            this.merge.Location = new System.Drawing.Point(794, 417);
+            this.merge.Location = new System.Drawing.Point(794, 389);
             this.merge.Name = "merge";
             this.merge.Size = new System.Drawing.Size(75, 46);
             this.merge.TabIndex = 2;
-            this.merge.Text = "Merge";
+            this.merge.Text = "show Merge";
             this.merge.UseVisualStyleBackColor = true;
             this.merge.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(794, 451);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 41);
+            this.button1.TabIndex = 17;
+            this.button1.Text = "segminted ";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(904, 500);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.merge);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
@@ -305,6 +317,7 @@ namespace ImageTemplate
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Diagnostics.EventLog eventLog1;
         private System.Windows.Forms.Button merge;
+        private System.Windows.Forms.Button button1;
     }
 }
 
