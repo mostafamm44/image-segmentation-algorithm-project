@@ -12,6 +12,8 @@ using System.Security.Policy;
 using System.Windows.Forms.VisualStyles;
 using System.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+
+using System.Threading.Tasks;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -369,83 +371,98 @@ namespace ImageTemplate
                         return (regionSet,nodeMap, RAlledges, GAlledges, BAlledges, Rset,  Gset, Bset);
         }
 
-        public static DisjointSet  components(DisjointSet regionSet,int[,] nodeMap, int height, int width ,int K, List<Edge>  Rdges, List<Edge> Gdges, List<Edge> Bdges, DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
+        public static DisjointSet components(DisjointSet regionSet, int[,] nodeMap, int height, int width, int K, List<Edge> Rdges, List<Edge> Gdges, List<Edge> Bdges, DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
         {
-         
-           Rdges.Sort((a, b) => a.weight.CompareTo(b.weight));
-           Gdges.Sort((a, b) => a.weight.CompareTo(b.weight));
-           Bdges.Sort((a, b) => a.weight.CompareTo(b.weight));
-            // Array.Sort(Rdges, (a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
-            foreach (Edge e in Rdges )
-            { int rootF = Rset.Find(e.From);
-                int rootT = Rset.Find(e.To);
 
-                  //  Rset.Add((e.From.id, e.To.id), e.Weight);
-                if (rootF != rootT)
+            Rdges.Sort((a, b) => a.weight.CompareTo(b.weight));
+            Gdges.Sort((a, b) => a.weight.CompareTo(b.weight));
+            Bdges.Sort((a, b) => a.weight.CompareTo(b.weight));
+            Parallel.Invoke(
+            // Array.Sort(Rdges, (a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
+            () =>
+            {
+                foreach (Edge e in Rdges)
                 {
-                    double itF = Rset.it[rootF] +
-                        (double)((double)K / (double)Rset.GetSize(e.From));
-                    double itT = Rset.it[rootT] +
-                        (double)((double)K / (double)Rset.GetSize(e.To));
-                    double Mint = (double)Math.Min(itT, itF);
-                    
-                    if (Mint >=e.weight)
+                    int rootF = Rset.Find(e.From);
+                    int rootT = Rset.Find(e.To);
+
+                    //  Rset.Add((e.From.id, e.To.id), e.Weight);
+                    if (rootF != rootT)
                     {
-                        //Console.WriteLine("here " + K);
-                        Rset.Union(e.From, e.To);
-                        Rset.it[Rset.Find(rootF)] = e.weight;
-                     
+                        double itF = Rset.it[rootF] +
+                            (double)((double)K / (double)Rset.GetSize(e.From));
+                        double itT = Rset.it[rootT] +
+                            (double)((double)K / (double)Rset.GetSize(e.To));
+                        double Mint = (double)Math.Min(itT, itF);
+
+                        if (Mint >= e.weight)
+                        {
+                            //Console.WriteLine("here " + K);
+                            Rset.Union(e.From, e.To);
+                            Rset.it[Rset.Find(rootF)] = e.weight;
+
+                        }
+
                     }
-                       
                 }
-            }
+            },
 
             //Array.Sort(Gdges, (a, b) => a.green_Weight.CompareTo(b.green_Weight));
-            foreach (Edge e in Gdges)
+            () =>
             {
-                //  Gset.Add((e.From.id, e.To.id), e.Weight);
-                int rootF = Gset.Find(e.From);
-                int rootT = Gset.Find(e.To);
-                if (rootF != Gset.Find(e.To))
+                foreach (Edge e in Gdges)
                 {
-                    double itF = Gset.it[rootF] + 
-                        (double)((double)K / (double)Gset.GetSize(e.From));
-                    double itT = Gset.it[rootT] + 
-                        (double)((double)K / (double)Gset.GetSize(e.To));
-                    double Mint = Math.Min(itT, itF);
-                       // if(Rset.Find(e.From.id) != Rset.Find(e.To.id))redges.Add(e);
-                    if (Mint >=e.weight)
+                    //  Gset.Add((e.From.id, e.To.id), e.Weight);
+                    int rootF = Gset.Find(e.From);
+                    int rootT = Gset.Find(e.To);
+                    if (rootF != Gset.Find(e.To))
                     {
-                        Gset.Union(e.From, e.To);
+                        double itF = Gset.it[rootF] +
+                            (double)((double)K / (double)Gset.GetSize(e.From));
+                        double itT = Gset.it[rootT] +
+                            (double)((double)K / (double)Gset.GetSize(e.To));
+                        double Mint = Math.Min(itT, itF);
+                        // if(Rset.Find(e.From.id) != Rset.Find(e.To.id))redges.Add(e);
+                        if (Mint >= e.weight)
+                        {
+                            Gset.Union(e.From, e.To);
 
-                        Gset.it[Gset.Find(rootF)] =  e.weight;
-                        //Math.Max(Gset.it[Gset.Find(e.From.id)] , e.Weight);
-                    }
-
-                }
-            }
-           // Array.Sort(Bdges, (a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
-            foreach (Edge e in Bdges)
-            {
-                int rootF = Bset.Find(e.From);
-                int rootT = Bset.Find(e.To);
-
-                if (rootF != rootT) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
-                {
-                    double itF = Bset.it[rootF]
-                        + (double)((double)K / (double)Bset.GetSize(e.From));
-                    double itT = Bset.it[rootT] +
-                        (double)((double)K / (double)Bset.GetSize(e.To));
-                    double Mint = Math.Min(itT, itF);
-                    if (Mint >= e.weight)
-                    {
-                        Bset.Union(e.From, e.To);
-                        Bset.it[Bset.Find(rootF)] =  e.weight;
+                            Gset.it[Gset.Find(rootF)] = e.weight;
+                            //Math.Max(Gset.it[Gset.Find(e.From.id)] , e.Weight);
+                        }
 
                     }
-
                 }
-            }
+            },
+
+
+            // Array.Sort(Bdges, (a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
+             () =>
+             {
+                 foreach (Edge e in Bdges)
+                 {
+                     int rootF = Bset.Find(e.From);
+                     int rootT = Bset.Find(e.To);
+
+                     if (rootF != rootT) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
+                     {
+                         double itF = Bset.it[rootF]
+                             + (double)((double)K / (double)Bset.GetSize(e.From));
+                         double itT = Bset.it[rootT] +
+                             (double)((double)K / (double)Bset.GetSize(e.To));
+                         double Mint = Math.Min(itT, itF);
+                         if (Mint >= e.weight)
+                         {
+                             Bset.Union(e.From, e.To);
+                             Bset.it[Bset.Find(rootF)] = e.weight;
+
+                         }
+
+                     }
+                 }
+             }
+            );
+            
             foreach (Edge e in Rdges)
             {
               //int x=  e.From.X;
@@ -469,7 +486,8 @@ namespace ImageTemplate
                  }
 
 
-        public static void WriteDisjointSetsToDesktop(int[,] nodeMap,List<Edge> edges, DisjointSet set, int width, int height)
+        public static void WriteDisjointSetsToDesktopWithPreCalculatedData(int[,] nodeMap, List<Edge> edges, DisjointSet set, int width, int height, List<KeyValuePair<int, int>> sortedComponents)
+
         {
             string fileName = "segmentation_results.txt";
             // Get desktop path that works on Windows, Mac, and Linux
@@ -493,41 +511,46 @@ namespace ImageTemplate
             using (StreamWriter writer = new StreamWriter(filePath))
             {
                 // Write component matrix
-                writer.WriteLine($"Component IDs for {width}x{height} image:");
+                //writer.WriteLine($"Component IDs for {width}x{height} image:");
 
+                writer.WriteLine(sortedComponents.Count);
 
-               
-
-                // Calculate component statistics
-                var components = new Dictionary<int, int>();
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        int root = set.Find(nodeMap[y, x]);
-                        if (!components.ContainsKey(root)){
-                            components.Add(root, set.GetSize(root)) ;
-                        }
-                            // components.TryGetValue(root, out var count) ? count + 1 : 1;
-                    }
-                }
-
-                // Write statistics
-            //    writer.WriteLine("\nComponent Statistics:");
-                writer.WriteLine( components.Count);
-              //  writer.WriteLine("Top  largest components:");
-                foreach (var kvp in components.OrderByDescending(x => x.Value))
+                foreach (var kvp in sortedComponents)
                 {
                     writer.WriteLine(kvp.Value);
                 }
+
+
+                //    // Calculate component statistics
+                //    var components = new Dictionary<int, int>();
+                //    for (int y = 0; y < height; y++)
+                //    {
+                //        for (int x = 0; x < width; x++)
+                //        {
+                //            int root = set.Find(nodeMap[y, x]);
+                //            if (!components.ContainsKey(root)){
+                //                components.Add(root, set.GetSize(root)) ;
+                //            }
+                //                // components.TryGetValue(root, out var count) ? count + 1 : 1;
+                //        }
+                //    }
+
+                //    // Write statistics
+                ////    writer.WriteLine("\nComponent Statistics:");
+                //    writer.WriteLine( components.Count);
+                //  //  writer.WriteLine("Top  largest components:");
+                //    foreach (var kvp in components.OrderByDescending(x => x.Value))
+                //    {
+                //        writer.WriteLine(kvp.Value);
+                //    }
             }
 
             Console.WriteLine($"Results saved to: {filePath}");
         }
-        public static void DisplayDisjointSets(int[,] nodeMap, int width, int height, DisjointSet set, PictureBox PicBox)
+        public static void DisplayDisjointSetsWithPreCalculatedColors(int[,] nodeMap, int width, int height, DisjointSet set, Dictionary<int, RGBPixel> regionColors, PictureBox PicBox)
         {
-            Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
-            Random rand = new Random();
+            //Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
+            //Random rand = new Random();
             RGBPixel[,] segmented = new RGBPixel[height, width];
             Bitmap bmp = new Bitmap(width, height);
             for (int y = 0; y < height; y++)
@@ -535,15 +558,15 @@ namespace ImageTemplate
                 for (int x = 0; x < width; x++)
                 {
                     int root = set.Find(nodeMap[y, x]); // or Gset/Bset
-                    if (!regionColors.ContainsKey(root))
-                    {
-                        regionColors[root] = new RGBPixel
-                        {
-                            red = (byte)rand.Next(256),
-                            green = (byte)rand.Next(256),
-                            blue = (byte)rand.Next(256)
-                        };
-                    }
+                    //if (!regionColors.ContainsKey(root))
+                    //{
+                    //    regionColors[root] = new RGBPixel
+                    //    {
+                    //        red = (byte)rand.Next(256),
+                    //        green = (byte)rand.Next(256),
+                    //        blue = (byte)rand.Next(256)
+                    //    };
+                    //}
                     segmented[y, x] = regionColors[root];
                     RGBPixel px = segmented[y, x];
                     Color color = Color.FromArgb(px.red, px.green, px.blue);
