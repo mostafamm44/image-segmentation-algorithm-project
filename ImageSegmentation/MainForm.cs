@@ -59,55 +59,25 @@ namespace ImageTemplate
             regoins = new DisjointSet(width * height);
             regoins = regionSet;
             NodeMap = nodeMap;
-            var Rset=ImageOperations.components(regionSet,nodeMap, height,width, 30000, Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
+            int kavalue = Convert.ToInt32(Ktxtbox.Text);
+            var Rset=ImageOperations.components(regionSet,nodeMap, height,width, kavalue, Rdges, Gdges, Bdges, RAlledges, GAlledges, BAlledges);            // 3. Find external min edges
 
             //  random colors 
-            regionColors = new Dictionary<int, RGBPixel>();
-            Random rand = new Random();
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int root = Rset.Find(nodeMap[y, x]);
-                    if (!regionColors.ContainsKey(root))
-                    {
-                        regionColors[root] = new RGBPixel
-                        {
-                            red = (byte)rand.Next(256),
-                            green = (byte)rand.Next(256),
-                            blue = (byte)rand.Next(256)
-                        };
-                    }
-                }
-            }
+             regionColors =ImageOperations.Coloring(nodeMap, width, height, Rset);
 
             //  sort segment 
-            var components = new Dictionary<int, int>();
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int root = Rset.Find(nodeMap[y, x]);
-                    if (!components.ContainsKey(root))
-                    {
-                        components.Add(root, Rset.GetSize(root));
-                    }
-                }
-            }
-
-
-            var sortedComponents = components.OrderByDescending(x => x.Value).ToList();
+            var sortedComponents = ImageOperations.sortComponents(nodeMap,width,height, Rset);
 
             timer.Stop();
             long time = timer.ElapsedMilliseconds;
 
-
-            MessageBox.Show($"Segmentation Processing Time: {time} ms",
-                           "Processing Time", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Timetxtbox.Text = time.ToString();
+            //MessageBox.Show($"Segmentation Processing Time: {time} ms",
+            //               "Processing Time", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
 
             
-            ImageOperations.WriteDisjointSetsToDesktopWithPreCalculatedData(NodeMap, Rdges, Rset, width, height, sortedComponents);
+            ImageOperations.WriteDisjointSetsToDesktopWithPreCalculatedData(sortedComponents);
 
             
             ImageOperations.DisplayDisjointSetsWithPreCalculatedColors(NodeMap, width, height, Rset, regionColors, pictureBox2);
@@ -148,7 +118,7 @@ namespace ImageTemplate
 
         private void button1_Click(object sender, EventArgs e)
         {
-            RGBPixel[,] merged = new RGBPixel[h, w];
+            RGBPixel[,] merged = new RGBPixel[h, w]; 
             if (selected.Count > 0)
             {
                 var G = selected[selected.Count-1];
