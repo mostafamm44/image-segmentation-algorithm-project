@@ -118,7 +118,7 @@ namespace ImageTemplate
 
         private void button1_Click(object sender, EventArgs e)
         {
-            RGBPixel[,] merged = new RGBPixel[h, w];
+            RGBPixel[,] merged = new RGBPixel[h, w]; 
             if (selected.Count > 0)
             {
                 var G = selected[selected.Count-1];

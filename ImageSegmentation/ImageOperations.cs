@@ -289,78 +289,73 @@ namespace ImageTemplate
             }
         }
         //build graph for given matrix and c is the color pixel 1 for red 2 for blue 3 for green
-        public static (DisjointSet,int[,], List<Edge>, List<Edge>, List<Edge>, DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image)
+        public static (DisjointSet,int[,], List<Edge>, List<Edge>, List<Edge>, DisjointSet , DisjointSet, DisjointSet) BuildGraph(RGBPixel[,] image) // Exact O(n^2)
         {
-            int height = GetHeight(image);
-            int width = GetWidth(image);
-            int [,] nodeMap = new int[height, width];
-            //var graph = new Dictionary<PixelNode, List<Edge>>();
-            //  List<Edge> Alledges = new List<Edge>();
-            List<Edge> RAlledges = new List<Edge>();
-            List<Edge> GAlledges = new List<Edge>();
-            List<Edge> BAlledges = new List<Edge>();
-            // int[,] check = new int [height,width]; 
-            DisjointSet Rset = new DisjointSet(width * height);
-            DisjointSet Gset = new DisjointSet(width * height);
-            DisjointSet Bset = new DisjointSet(width * height);
-            DisjointSet regionSet = new DisjointSet(width * height);
-            int id = 1;
-           
-            nodeMap[0, 0] = 0;
-           
-            for (int y = 0; y < height; y++)
+            int height = GetHeight(image); //O(1)
+            int width = GetWidth(image); //O(1)
+            int [,] nodeMap = new int[height, width]; //O(N^2)
+
+            List<Edge> RAlledges = new List<Edge>();//O(1)
+            List<Edge> GAlledges = new List<Edge>();//O(1)
+            List<Edge> BAlledges = new List<Edge>();//O(1)
+            DisjointSet Rset = new DisjointSet(width * height);//O(N^2)
+            DisjointSet Gset = new DisjointSet(width * height);//O(N^2)
+            DisjointSet Bset = new DisjointSet(width * height);//O(N^2)
+            DisjointSet regionSet = new DisjointSet(width * height);//O(N^2)
+            int id = 1;//O(1)
+
+            nodeMap[0, 0] = 0;//O(1)
+
+            for (int y = 0; y < height; y++) //O(N^2)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < width; x++)//O(N)
                 {
-                    Rset.make_set(nodeMap[y, x], y, x);
-                    Gset.make_set(nodeMap[y,x], y, x);
-                    Bset.make_set(nodeMap[y, x], y, x);
-                    regionSet.make_set(nodeMap[y, x], y, x);
-                    int[,] directions = {
+                    Rset.make_set(nodeMap[y, x]);//O(1)
+                    Gset.make_set(nodeMap[y, x]);//O(1)
+                    Bset.make_set(nodeMap[y, x]);//O(1)
+                    regionSet.make_set(nodeMap[y, x]);//O(1)
+                    int[,] directions = { //O(1)
                                     {0, 1},
                                     {1, 1},
                                     {1, 0},
                                     {1, -1},
                                   
                                 };
-                    PixelNode current = new PixelNode(x,y, image[y,x], nodeMap[y,x]);
-                   // nodeMap[y, x] = current;
-                    for (int i = 0; i < directions.GetLength(0); i++)
-                    {
-                        int dx = directions[i, 1];
-                        int dy = directions[i, 0];
+                    PixelNode current = new PixelNode(x,y, image[y,x], nodeMap[y,x]);//O(1)
 
-                        int nx = x + dx;
-                        int ny = y + dy;
-                        //int id_d = id;
+                    for (int i = 0; i < directions.GetLength(0); i++) //O(1)
+                    {
+                        int dx = directions[i, 1];//O(1)
+                        int dy = directions[i, 0];//O(1)
+
+                        int nx = x + dx;//O(1)
+                        int ny = y + dy;//O(1)
+
                         if (nx >= 0 && ny >= 0 && nx < width && ny < height)
                         {
-                            PixelNode neighbor;
-                            if (nodeMap[ny, nx] != 0)
+                            PixelNode neighbor;//O(1)
+                            if (nodeMap[ny, nx] != 0)//O(1)
                             {
-                                neighbor = new PixelNode(nx, ny, image[ny, nx], nodeMap[ny, nx]);
-                                
+                                neighbor = new PixelNode(nx, ny, image[ny, nx], nodeMap[ny, nx]);//O(1)
 
                             }
                             else
                             {
                                 
-                                  neighbor = new PixelNode(nx, ny, image[ny, nx], id);
-                                    nodeMap[ny, nx] = neighbor.id;
-
-                                    id++;
-                                
+                                  neighbor = new PixelNode(nx, ny, image[ny, nx], id);//O(1)
+                                  nodeMap[ny, nx] = neighbor.id;//O(1)
+                                  id++;//O(1)
                             }
-                           byte wr = (byte)Math.Abs(current.color.red - neighbor.color.red);
-                           byte wg = (byte)Math.Abs(current.color.green - neighbor.color.green);
-                           byte wb = (byte)Math.Abs(current.color.blue - neighbor.color.blue);
-                            Edge redge = new Edge(current.id, neighbor.id, wr);
-                            Edge gedge = new Edge(current.id, neighbor.id,  wg);
-                            Edge bedge = new Edge(current.id, neighbor.id,  wb);
+                           byte wr = (byte)Math.Abs(current.color.red - neighbor.color.red);//O(1)
+                            byte wg = (byte)Math.Abs(current.color.green - neighbor.color.green);//O(1)
+                            byte wb = (byte)Math.Abs(current.color.blue - neighbor.color.blue);//O(1)
+                            Edge redge = new Edge(current.id, neighbor.id, wr);//O(1)
+                            Edge gedge = new Edge(current.id, neighbor.id,  wg);//O(1)
+                            Edge bedge = new Edge(current.id, neighbor.id,  wb);//O(1)
 
-                            RAlledges.Add(redge);
-                            GAlledges.Add(gedge);
-                            BAlledges.Add(bedge);
+                            RAlledges.Add(redge);//O(1)
+                            GAlledges.Add(gedge);//O(1)
+                            BAlledges.Add(bedge);//O(1)
 
 
 
@@ -368,38 +363,35 @@ namespace ImageTemplate
                 }
            } 
             }
-                        return (regionSet,nodeMap, RAlledges, GAlledges, BAlledges, Rset,  Gset, Bset);
+                        return (regionSet,nodeMap, RAlledges, GAlledges, BAlledges, Rset,  Gset, Bset); //O(1)
         }
 
-        public static DisjointSet components(DisjointSet regionSet, int[,] nodeMap, int height, int width, int K, List<Edge> Rdges, List<Edge> Gdges, List<Edge> Bdges, DisjointSet Rset, DisjointSet Gset, DisjointSet Bset)
+        public static DisjointSet components(DisjointSet regionSet, int[,] nodeMap, int height, int width, int K, List<Edge> Rdges, List<Edge> Gdges, List<Edge> Bdges, DisjointSet Rset, DisjointSet Gset, DisjointSet Bset) //O(mlog m)
         {
 
-            Rdges.Sort((a, b) => a.weight.CompareTo(b.weight));
-            Gdges.Sort((a, b) => a.weight.CompareTo(b.weight));
-            Bdges.Sort((a, b) => a.weight.CompareTo(b.weight));
+            Rdges.Sort((a, b) => a.weight.CompareTo(b.weight)); //O(m log m)
+            Gdges.Sort((a, b) => a.weight.CompareTo(b.weight));//O(m log m)
+            Bdges.Sort((a, b) => a.weight.CompareTo(b.weight));//O(m log m)
             Parallel.Invoke(
             // Array.Sort(Rdges, (a, b) => a.Red_Weight.CompareTo(b.Red_Weight));
             () =>
             {
-                foreach (Edge e in Rdges)
+                foreach (Edge e in Rdges) //Best O(m)  Worst O(mlog m)
                 {
-                    int rootF = Rset.Find(e.From);
-                    int rootT = Rset.Find(e.To);
+                    int rootF = Rset.Find(e.From); // Best Case O(1) , Worst Case //O(log m)
+                    int rootT = Rset.Find(e.To); // Best Case O(1) , Worst Case //O(log m)
 
-                    //  Rset.Add((e.From.id, e.To.id), e.Weight);
-                    if (rootF != rootT)
+                    if (rootF != rootT) //O(1)
                     {
-                        double itF = Rset.it[rootF] +
-                            (double)((double)K / (double)Rset.GetSize(e.From));
-                        double itT = Rset.it[rootT] +
-                            (double)((double)K / (double)Rset.GetSize(e.To));
-                        double Mint = (double)Math.Min(itT, itF);
+                        double itF = Rset.it[rootF] + (K / Rset.GetSize(e.From)); // Best Case O(1) , Worst Case //O(log m)
+                        double itT = Rset.it[rootT] +(K / Rset.GetSize(e.To));// Best Case O(1) , Worst Case //O(log m)
+                        double Mint = Math.Min(itT, itF);  //O(1)
 
-                        if (Mint >= e.weight)
+                        if (Mint >= e.weight) //O(1)
                         {
                             //Console.WriteLine("here " + K);
-                            Rset.Union(e.From, e.To);
-                            Rset.it[Rset.Find(rootF)] = e.weight;
+                            Rset.Union(e.From, e.To); // Best Case O(1) , Worst Case //O(log m)
+                            Rset.it[Rset.Find(rootF)] = e.weight; // Best Case O(1) , Worst Case //O(log m)
 
                         }
 
@@ -410,25 +402,22 @@ namespace ImageTemplate
             //Array.Sort(Gdges, (a, b) => a.green_Weight.CompareTo(b.green_Weight));
             () =>
             {
-                foreach (Edge e in Gdges)
+                foreach (Edge e in Gdges) //Best O(m)  Worst O(mlog m)
                 {
                     //  Gset.Add((e.From.id, e.To.id), e.Weight);
                     int rootF = Gset.Find(e.From);
                     int rootT = Gset.Find(e.To);
                     if (rootF != Gset.Find(e.To))
                     {
-                        double itF = Gset.it[rootF] +
-                            (double)((double)K / (double)Gset.GetSize(e.From));
-                        double itT = Gset.it[rootT] +
-                            (double)((double)K / (double)Gset.GetSize(e.To));
+                        double itF = Gset.it[rootF] + (K / Gset.GetSize(e.From));
+                        double itT = Gset.it[rootT] + (K / Gset.GetSize(e.To));
                         double Mint = Math.Min(itT, itF);
-                        // if(Rset.Find(e.From.id) != Rset.Find(e.To.id))redges.Add(e);
+                        
                         if (Mint >= e.weight)
                         {
                             Gset.Union(e.From, e.To);
 
                             Gset.it[Gset.Find(rootF)] = e.weight;
-                            //Math.Max(Gset.it[Gset.Find(e.From.id)] , e.Weight);
                         }
 
                     }
@@ -439,17 +428,15 @@ namespace ImageTemplate
             // Array.Sort(Bdges, (a, b) => a.blue_Weight.CompareTo(b.blue_Weight));
              () =>
              {
-                 foreach (Edge e in Bdges)
+                 foreach (Edge e in Bdges) //Best O(m)  Worst O(mlog m)
                  {
                      int rootF = Bset.Find(e.From);
                      int rootT = Bset.Find(e.To);
 
                      if (rootF != rootT) //&& Rset.Find(e.From.id) == Rset.Find(e.To.id))
                      {
-                         double itF = Bset.it[rootF]
-                             + (double)((double)K / (double)Bset.GetSize(e.From));
-                         double itT = Bset.it[rootT] +
-                             (double)((double)K / (double)Bset.GetSize(e.To));
+                         double itF = Bset.it[rootF] + (K / Bset.GetSize(e.From));
+                         double itT = Bset.it[rootT] + (K / Bset.GetSize(e.To));
                          double Mint = Math.Min(itT, itF);
                          if (Mint >= e.weight)
                          {
@@ -463,27 +450,21 @@ namespace ImageTemplate
              }
             );
             
-            foreach (Edge e in Rdges)
+            foreach (Edge e in Rdges) //Best O(m)  Worst O(mlog m)
             {
-              //int x=  e.From.X;
-              //  int y = e.From.Y;
-              //  int nx = e.To.X;
-              //  int ny = e.To.Y;
-                int idF = e.From;// nodeMap[y, x].id;
-                int idT = e.To;// nodeMap[ny,nx].id;
-              
-                    if (Rset.Find(idF) == Rset.Find(idT)
-                        && Gset.Find(idF) == Gset.Find(idT)
-                        && Bset.Find(idF) == Bset.Find(idT))
-                    {
+                int idF = e.From;//O(1)
+                int idT = e.To; //O(1)
 
-                        regionSet.Union(idF, idT);
-                    }
+                if (Rset.Find(idF) == Rset.Find(idT) && Gset.Find(idF) == Gset.Find(idT) && Bset.Find(idF) == Bset.Find(idT))//Best O(1)  Worst O(log m)
+                {
+
+                        regionSet.Union(idF, idT); //Best O(1)  Worst O(log m)
+                }
                 
             }
             //Console.WriteLine("here "+c);
-            return regionSet;
-                 }
+            return regionSet; //O(1)
+        }
 
 
         public static void WriteDisjointSetsToDesktopWithPreCalculatedData(List<KeyValuePair<int, int>> sortedComponents)
@@ -512,8 +493,6 @@ namespace ImageTemplate
         
             using (StreamWriter writer = new StreamWriter(filePath))
             {
-                // Write component matrix
-                //writer.WriteLine($"Component IDs for {width}x{height} image:");
 
                 writer.WriteLine(sortedComponents.Count);
 
@@ -521,30 +500,6 @@ namespace ImageTemplate
                 {
                     writer.WriteLine(kvp.Value);
                 }
-
-
-                //    // Calculate component statistics
-                //    var components = new Dictionary<int, int>();
-                //    for (int y = 0; y < height; y++)
-                //    {
-                //        for (int x = 0; x < width; x++)
-                //        {
-                //            int root = set.Find(nodeMap[y, x]);
-                //            if (!components.ContainsKey(root)){
-                //                components.Add(root, set.GetSize(root)) ;
-                //            }
-                //                // components.TryGetValue(root, out var count) ? count + 1 : 1;
-                //        }
-                //    }
-
-                //    // Write statistics
-                ////    writer.WriteLine("\nComponent Statistics:");
-                //    writer.WriteLine( components.Count);
-                //  //  writer.WriteLine("Top  largest components:");
-                //    foreach (var kvp in components.OrderByDescending(x => x.Value))
-                //    {
-                //        writer.WriteLine(kvp.Value);
-                //    }
             }
 
             Console.WriteLine($"Results saved to: {filePath}");
@@ -552,24 +507,13 @@ namespace ImageTemplate
         public static void DisplayDisjointSetsWithPreCalculatedColors(int[,] nodeMap, int width, int height, DisjointSet set, Dictionary<int, RGBPixel> regionColors, PictureBox PicBox)
         {
 
-            //Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
-            //Random rand = new Random();
             RGBPixel[,] segmented = new RGBPixel[height, width];
             Bitmap bmp = new Bitmap(width, height);
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    int root = set.Find(nodeMap[y, x]); // or Gset/Bset
-                    //if (!regionColors.ContainsKey(root))
-                    //{
-                    //    regionColors[root] = new RGBPixel
-                    //    {
-                    //        red = (byte)rand.Next(256),
-                    //        green = (byte)rand.Next(256),
-                    //        blue = (byte)rand.Next(256)
-                    //    };
-                    //}
+                    int root = set.Find(nodeMap[y, x]);
                     segmented[y, x] = regionColors[root];
                     RGBPixel px = segmented[y, x];
                     Color color = Color.FromArgb(px.red, px.green, px.blue);
@@ -583,80 +527,80 @@ namespace ImageTemplate
 
 
         }
-        public static Dictionary<int, RGBPixel>  Coloring(int[,] nodeMap, int width, int height, DisjointSet set) 
+        public static Dictionary<int, RGBPixel>  Coloring(int[,] nodeMap, int width, int height, DisjointSet set)  //avg O(m) , worst O(m^2) 
         {
 
             Dictionary<int, RGBPixel>  regionColors = new Dictionary<int, RGBPixel>();
-            Random rand = new Random();
-            for (int y = 0; y < height; y++)
+            Random rand = new Random(); // O(1)
+            for (int y = 0; y < height; y++) //worst O(m^2) average O(m)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < width; x++) // n*m
                 {
-                    int root = set.Find(nodeMap[y, x]);
-                    if (!regionColors.ContainsKey(root))
+                    int root = set.Find(nodeMap[y, x]); //best O(1) Worst O(log(m))
+                    if (!regionColors.ContainsKey(root)) //worst O(m) avg O(1)
                     {
-                        regionColors[root] = new RGBPixel
+                        regionColors[root] = new RGBPixel // Best O(1) worst O(m)
                         {
-                            red = (byte)rand.Next(256),
-                            green = (byte)rand.Next(256),
-                            blue = (byte)rand.Next(256)
+                            red = (byte)rand.Next(256), // O(1)
+                            green = (byte)rand.Next(256), // O(1)
+                            blue = (byte)rand.Next(256) // O(1)
                         };
                     }
                 }
             }
-            return  regionColors;
+            return  regionColors; //O(1)
         }
         public static List<KeyValuePair<int,int>> sortComponents(int[,] nodeMap, int width, int height, DisjointSet set)
         {
-            var components = new Dictionary<int, int>();
-            for (int y = 0; y < height; y++)
+            var components = new Dictionary<int, int>(); //O(1)
+            for (int y = 0; y < height; y++) //avg O(m) , worst O(m^2)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    int root = set.Find(nodeMap[y, x]);
-                    if (!components.ContainsKey(root))
+                    int root = set.Find(nodeMap[y, x]);// best O(1), worst O(log m)
+                    if (!components.ContainsKey(root)) // avg O(1), worst O(m)
                     {
-                        components.Add(root, set.GetSize(root));
+                        components.Add(root, set.GetSize(root)); //best O(1), worst O(log m)
                     }
                 }
             }
 
 
-            var sortedComponents = components.OrderByDescending(x => x.Value).ToList();
-            return sortedComponents;
+            var sortedComponents = components.OrderByDescending(x => x.Value).ToList(); //O(mlog(m))
+            return sortedComponents; //O(1)
 
         }
 
 
-        public static void DisplayMergedComponent(int[,] nodeMap, int width, int height,int component, DisjointSet set,RGBPixel[,] image, PictureBox PicBox)
+        public static void DisplayMergedComponent(int[,] nodeMap, int width, int height,int component, DisjointSet set,RGBPixel[,] image, PictureBox PicBox) //best O(n^2) worst //O(n^2 * log(m))
         {
-            RGBPixel[,] segmented = new RGBPixel[height, width];
-            Bitmap bmp = new Bitmap(width, height);
-            for (int y = 0; y < height; y++)
+            RGBPixel[,] segmented = new RGBPixel[height, width]; //O(n^2)
+            Bitmap bmp = new Bitmap(width, height); //O(n^2)
+            for (int y = 0; y < height; y++) //best O(n^2) worst //O(n^2 * log(m))
             {
                 for (int x = 0; x < width; x++)
                 {
-                    int root = set.Find(nodeMap[y, x]); // or Gset/Bset
-                    if (root == component)
+                    int root = set.Find(nodeMap[y, x]); // best O(1) , worst O(log m)
+                    if (root == component) //O(1)
                     {
-                        segmented[y, x] = image[y, x];
+                        segmented[y, x] = image[y, x]; //O(1)
                     }
                     else
                     {
-                        segmented[y, x].blue = 255;
-                        segmented[y, x].red = 255;
-                        segmented[y, x].green = 255;
+                        segmented[y, x].blue = 255; //O(1)
+                        segmented[y, x].red = 255; //O(1)
+                        segmented[y, x].green = 255; //O(1)
                     }
-                    RGBPixel px =segmented[y, x];
-                    Color color = Color.FromArgb(px.red, px.green, px.blue);
-                    bmp.SetPixel(x, y, color);
-                  
+                    RGBPixel px =segmented[y, x]; //O(1)
+                    Color color = Color.FromArgb(px.red, px.green, px.blue); //O(1)
+                    bmp.SetPixel(x, y, color); //O(1)
+
                 }
             }
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.bmp");
-            bmp.Save(path);
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.bmp"); //O(1)
+            bmp.Save(path); //O(n^2)
 
-            DisplayImage(segmented, PicBox);
+            DisplayImage(segmented, PicBox); //O(n^2)
         }
 
 
@@ -665,85 +609,57 @@ namespace ImageTemplate
     public class DisjointSet
     {
         private int[] parent;
-       // private int[] rank;
         public double [] it ;
         private int[] count;
-        //public int[,] exdiff;
-       public Dictionary<int, List<(int ,int) >> P_id;
-       // private List<((int, int) pair, int value)> _data;
+       
         public DisjointSet(int size)
         {
             parent = new int[size];
-           // rank = new int[size];
             count = new int[size];
             it = new double[size];
-            //_data  = new List<((int, int), int)>();
-            //   exdiff = new int[size + 1, size + 1];
-           // P_id = new Dictionary<int, List<(int,int)>>();
         }
 
 
-        public void make_set(int v,int y,int x)
+        public void make_set(int v)
         {
             it[v]= 0;
             parent[v] = v;
-         //   rank[v] = 0;
             count[v] = 1;
-           //if (!P_id.ContainsKey(v))
-           // {
-           //     P_id[v]= new List<(int ,int)>();
-                
-           // }
-           // P_id[v].Add((y,x));
-           // edges[v] = new List<Edge>();
         }
-        // Find with path compression
-        public int Find(int x)
+        public int Find(int x) // Best Case O(1) , Worst Case //O(log m)
         {
-            if (parent[x] != x)
+            if (parent[x] != x) //O(log m)
             {
                 parent[x] = Find(parent[x]); // Path compression
             }
-            return parent[x];
+            return parent[x]; //O(1)
         }
-
-        // Union by rank
        
 
-        //private bool AreEdgesEqual(Edge a, Edge b)
-        //{
-        //    // Check if edges are equal (undirected)
-        //    return (a.From.id == b.From.id && a.To.id == b.To.id) ||
-        //           (a.From.id == b.To.id && a.To.id == b.From.id);
-        //}
        
-            public void Union(int a, int b)
+        public void Union(int a, int b)
         {
-                int rootA = Find(a);
-                int rootB = Find(b);
-            //exdiff[rootA, rootB] = e.Weight;
+                int rootA = Find(a);// Best Case O(1) , Worst Case //O(log m)
+                int rootB = Find(b);// Best Case O(1) , Worst Case //O(log m)
 
-           // exdiff[rootB, rootA] = e.Weight;
-                if (rootA == rootB) return;
+                if (rootA == rootB) return; //O(1)
 
                 // Union by size: attach smaller to larger
-               if (count[rootA] < count[rootB])
+                if (count[rootA] < count[rootB]) //O(1)
                 {
-                    parent[rootA] = rootB;
-                    count[rootB] += count[rootA];
-             //   P_id[rootB].AddRange(P_id[rootA]);
+                    parent[rootA] = rootB; //O(1)
+                    count[rootB] += count[rootA]; //O(1)
                 }
-               else
-            {
-                parent[rootB] = rootA;
-                count[rootA]+= count[rootB];
-               // P_id[rootA].AddRange(P_id[rootB]);
-            }
+                else
+                {
+                    parent[rootB] = rootA;
+                    count[rootA]+= count[rootB];
+                }
           
-            }
+        }
         public int GetSize(int v)
         {
-            return count[Find(v)];
+            return count[Find(v)]; // Best Case O(1) , Worst Case //O(log m)
         }
         // Optional: Print sets
        

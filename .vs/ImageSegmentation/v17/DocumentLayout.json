@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "D:\\Mohammed\\college\\Y3\\semester 6\\Algo\\Project\\Repo\\Bonus\\image-segmentation-algorithm-project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageSegmentation\\ImageSegmentation.csproj|d:\\mohammed\\college\\y3\\semester 6\\algo\\project\\repo\\bonus\\image-segmentation-algorithm-project\\imagesegmentation\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageSegmentation\\ImageSegmentation.csproj|solutionrelative:imagesegmentation\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageSegmentation\\ImageSegmentation.csproj|D:\\Mohammed\\college\\Y3\\semester 6\\Algo\\Project\\Repo\\Bonus\\image-segmentation-algorithm-project\\imagesegmentation\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageSegmentation\\ImageSegmentation.csproj|solutionrelative:imagesegmentation\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageSegmentation\\ImageSegmentation.csproj|d:\\mohammed\\college\\y3\\semester 6\\algo\\project\\repo\\bonus\\image-segmentation-algorithm-project\\imagesegmentation\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageSegmentation\\ImageSegmentation.csproj|solutionrelative:imagesegmentation\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageSegmentation\\ImageSegmentation.csproj|D:\\Mohammed\\college\\Y3\\semester 6\\Algo\\Project\\Repo\\Bonus\\image-segmentation-algorithm-project\\imagesegmentation\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
@@ -26,30 +26,30 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "MainForm.cs",
               "DocumentMoniker": "D:\\Mohammed\\college\\Y3\\semester 6\\Algo\\Project\\Repo\\Bonus\\image-segmentation-algorithm-project\\ImageSegmentation\\MainForm.cs",
               "RelativeDocumentMoniker": "ImageSegmentation\\MainForm.cs",
               "ToolTip": "D:\\Mohammed\\college\\Y3\\semester 6\\Algo\\Project\\Repo\\Bonus\\image-segmentation-algorithm-project\\ImageSegmentation\\MainForm.cs",
               "RelativeToolTip": "ImageSegmentation\\MainForm.cs",
-              "ViewState": "AQIAACcAAAAAAAAAAAAYwEkAAAAuAAAA",
+              "ViewState": "AQIAAGgAAAAAAAAAAAAswHoAAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-15T23:26:28.216Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "ImageOperations.cs",
               "DocumentMoniker": "D:\\Mohammed\\college\\Y3\\semester 6\\Algo\\Project\\Repo\\Bonus\\image-segmentation-algorithm-project\\ImageSegmentation\\ImageOperations.cs",
               "RelativeDocumentMoniker": "ImageSegmentation\\ImageOperations.cs",
               "ToolTip": "D:\\Mohammed\\college\\Y3\\semester 6\\Algo\\Project\\Repo\\Bonus\\image-segmentation-algorithm-project\\ImageSegmentation\\ImageOperations.cs",
               "RelativeToolTip": "ImageSegmentation\\ImageOperations.cs",
-              "ViewState": "AQIAAFcCAAAAAAAAAAAiwGcCAAA3AAAA",
+              "ViewState": "AQIAABoAAAAAAAAAAAAAwCoAAAAWAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-05-15T23:26:28.276Z",
               "EditorCaption": ""
