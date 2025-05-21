@@ -486,9 +486,11 @@ namespace ImageTemplate
                  }
 
 
-        public static void WriteDisjointSetsToDesktopWithPreCalculatedData(int[,] nodeMap, List<Edge> edges, DisjointSet set, int width, int height, List<KeyValuePair<int, int>> sortedComponents)
+        public static void WriteDisjointSetsToDesktopWithPreCalculatedData(List<KeyValuePair<int, int>> sortedComponents)
 
         {
+
+
             string fileName = "segmentation_results.txt";
             // Get desktop path that works on Windows, Mac, and Linux
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -549,6 +551,7 @@ namespace ImageTemplate
         }
         public static void DisplayDisjointSetsWithPreCalculatedColors(int[,] nodeMap, int width, int height, DisjointSet set, Dictionary<int, RGBPixel> regionColors, PictureBox PicBox)
         {
+
             //Dictionary<int, RGBPixel> regionColors = new Dictionary<int, RGBPixel>();
             //Random rand = new Random();
             RGBPixel[,] segmented = new RGBPixel[height, width];
@@ -573,14 +576,59 @@ namespace ImageTemplate
                     bmp.SetPixel(x, y, color);
                 }
             }
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.png");
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.bmp");
             bmp.Save(path);
             DisplayImage(segmented, PicBox);
+
+
+
+        }
+        public static Dictionary<int, RGBPixel>  Coloring(int[,] nodeMap, int width, int height, DisjointSet set) 
+        {
+
+            Dictionary<int, RGBPixel>  regionColors = new Dictionary<int, RGBPixel>();
+            Random rand = new Random();
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int root = set.Find(nodeMap[y, x]);
+                    if (!regionColors.ContainsKey(root))
+                    {
+                        regionColors[root] = new RGBPixel
+                        {
+                            red = (byte)rand.Next(256),
+                            green = (byte)rand.Next(256),
+                            blue = (byte)rand.Next(256)
+                        };
+                    }
+                }
+            }
+            return  regionColors;
+        }
+        public static List<KeyValuePair<int,int>> sortComponents(int[,] nodeMap, int width, int height, DisjointSet set)
+        {
+            var components = new Dictionary<int, int>();
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int root = set.Find(nodeMap[y, x]);
+                    if (!components.ContainsKey(root))
+                    {
+                        components.Add(root, set.GetSize(root));
+                    }
+                }
+            }
+
+
+            var sortedComponents = components.OrderByDescending(x => x.Value).ToList();
+            return sortedComponents;
 
         }
 
 
-     public static void DisplayMergedComponent(int[,] nodeMap, int width, int height,int component, DisjointSet set,RGBPixel[,] image, PictureBox PicBox)
+        public static void DisplayMergedComponent(int[,] nodeMap, int width, int height,int component, DisjointSet set,RGBPixel[,] image, PictureBox PicBox)
         {
             RGBPixel[,] segmented = new RGBPixel[height, width];
             Bitmap bmp = new Bitmap(width, height);
@@ -605,7 +653,7 @@ namespace ImageTemplate
                   
                 }
             }
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.png");
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "output.bmp");
             bmp.Save(path);
 
             DisplayImage(segmented, PicBox);
@@ -613,6 +661,7 @@ namespace ImageTemplate
 
 
     }
+
     public class DisjointSet
     {
         private int[] parent;
